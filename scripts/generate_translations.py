@@ -8,8 +8,8 @@ Already-translated words are skipped — safe to rerun.
 
 Usage:
     python scripts/generate_translations.py
-    python scripts/generate_translations.py --source data/master.csv
-    python scripts/generate_translations.py --model qwen3.5 --output data/translations.csv
+    python scripts/generate_translations.py --source parsed/ankiweb-vocab/cards.csv
+    python scripts/generate_translations.py --model qwen3.5 --output enriched/translations/ankiweb-vocab.csv
 """
 
 import argparse
@@ -100,7 +100,7 @@ def main():
     parser.add_argument('--output', default=None,
                         help='Output join table (default: enriched/translations/<source>.csv)')
     parser.add_argument('--source-deck', default=None,
-                        help='Only translate cards from this source_deck (requires master.csv as source)')
+                        help='Only translate cards from this source_deck')
     parser.add_argument('--force', action='store_true',
                         help='Retranslate all words, overwriting existing entries')
     args = parser.parse_args()

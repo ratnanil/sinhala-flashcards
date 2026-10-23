@@ -15,7 +15,6 @@
 #   make audio                    German TTS for vocab deck (requires internet)
 #   make audio-phrases            German TTS for phrases deck (requires internet)
 #   make deck                     build all output files
-#   make master                   optional: merge all decks into data/master.csv (legacy)
 
 PYTHON      := python3
 APKG_FILES   := $(wildcard raw/anki/*.apkg)
@@ -26,7 +25,7 @@ PARSED_CSVS  := $(wildcard parsed/*/cards.csv)
 
 REMOTE := Dropbox:Flashcards Deluxe
 
-.PHONY: all export review master audio deck deploy clean-generated romanize help
+.PHONY: all export review audio deck deploy clean-generated romanize help
 
 all: deck
 
@@ -42,14 +41,6 @@ data/%/cards.csv: raw/anki/%.apkg scripts/export_apkg.py
 review: $(DATA_CSVS) $(MANUAL_CSVS) scripts/prepare_review.py
 	@echo "Preparing parsed card files..."
 	$(PYTHON) scripts/prepare_review.py
-
-# 3. Merge parsed cards → data/master.csv (legacy; will be removed)
-#    Reruns whenever any parsed cards file changes.
-data/master.csv: scripts/merge.py $(PARSED_CSVS)
-	@echo "Merging..."
-	$(PYTHON) scripts/merge.py
-
-master: data/master.csv
 
 # Preprocessing: generate emoji images for vocabulary words (outside main pipeline)
 # Only fetches images that don't exist yet — safe to rerun.
@@ -133,7 +124,7 @@ deploy:
 
 # Remove only generated files — never review files or source .apkg
 clean-generated:
-	rm -rf data/*/cards.csv data/master.csv output/
+	rm -rf data/*/cards.csv output/
 	@echo "Removed generated files. Parsed cards, raw sources, and .apkg files untouched."
 
 help:

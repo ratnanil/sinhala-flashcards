@@ -232,8 +232,6 @@ make images   # generates missing images only, safe to rerun; requires ollama se
 ```
 
 Notes:
-- Source must be `data/master.csv` (not raw `data/*/cards.csv`) so image filenames match the
-  clean English keys that `build_deck.py` looks up at build time
 - Numbers 1–9 map to keycap emoji (1️⃣–9️⃣); larger numbers are skipped (no suitable emoji)
 - `build_deck.py --image-key english` is needed when side 1 is not English (e.g. German deck)
 
@@ -283,7 +281,6 @@ Sinhala-Flashcards/
 └── scripts/
     ├── export_apkg.py          extract .apkg → CSV + audio
     ├── prepare_review.py       populate/update parsed/ card files
-    ├── merge.py                merge parsed/ cards → data/master.csv (legacy)
     ├── generate_images.py      generate emoji PNGs via Ollama + Twemoji (make images)
     ├── generate_translations.py  EN→DE translations via Ollama (make translate)
     ├── build_deck.py           assemble final Flashcard Deluxe .txt + Media/
@@ -296,7 +293,7 @@ Sinhala-Flashcards/
 
 | Flag | Default | Purpose |
 |------|---------|---------|
-| `--source` | *(required)* | Input CSV (`data/master.csv`) |
+| `--source` | *(required)* | Input CSV, e.g. `parsed/ankiweb-vocab/cards.csv` |
 | `--side1` | `english` | Column for side 1 text |
 | `--side2` | `sinhala` | Column for side 2 text |
 | `--image-key` | same as `--side1` | Column used to look up emoji PNG; set to `english` when side 1 is German |

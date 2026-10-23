@@ -2,9 +2,9 @@
 """
 Generate TTS audio for flashcard vocabulary using edge-tts or Piper.
 
-Reads master.csv and generates audio for cards that have no recording yet.
-Audio files are written to data/audio/ and registered in data/tts_audio.csv
-(a join table keyed by card ID + lang), so make master never overwrites them.
+Reads a parsed cards.csv and generates audio for cards that have no recording yet.
+Audio files are written to enriched/tts/audio/ and registered in enriched/tts/registry.csv
+(a join table keyed by card ID + lang), so reruns never overwrite existing entries.
 
 build_deck.py loads tts_audio.csv and uses it to fill in missing audio.
 

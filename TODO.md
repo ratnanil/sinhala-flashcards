@@ -68,10 +68,6 @@ equivalent yet) all live in different places with no common `raw/` root.
 It mixes raw audio, generated TTS, auto-exported cards, and translation join tables.
 There is no structural signal for what is safe to delete vs. what is precious.
 
-**5. `data/master.csv` has no home.**
-It is a cross-source merge that does not belong to any layer.  Currently it is optional
-and rarely used.
-
 ---
 
 ## Target structure
@@ -143,12 +139,14 @@ describes what to look for and how to resolve it.  Questions still open:
 
 ---
 
-## Migration steps (when time allows)
+## Migration steps — DONE
 
-1. Create `raw/` and move `anki/`, recordings there.
-2. Rename `review/*.csv` → `parsed/<source>/cards.csv` (auto-generated portion only).
-3. Extract all fix columns from review CSVs into `parsed/<source>/fixes.csv`.
-4. Update `prepare_review.py` (or replace it) to emit clean `cards.csv` + apply `fixes.csv`.
-5. Move translations, tts, images under `enriched/`.
-6. Update all script `--source` / `--output` defaults and Makefile paths.
-7. Delete `data/master.csv` or fold it into the `output/` merge step.
+All four layers are now in place:
+
+1. ✓ Created `raw/`; moved `.apkg` and recordings there.
+2. ✓ Renamed `review/*.csv` → `parsed/<source>/cards.csv`.
+3. ✓ Extracted fix columns → `parsed/<source>/fixes.csv`.
+4. ✓ Updated `prepare_review.py` to emit clean `cards.csv` + stub `fixes.csv`.
+5. ✓ Moved translations, tts, images under `enriched/`.
+6. ✓ Updated all script defaults and Makefile paths.
+7. ✓ Deleted `data/master.csv` and `scripts/merge.py`.
