@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-One-off parser: raw/html/omniglot-phrases.html → data/omniglot-phrases/cards.csv
+One-off parser: raw/omniglot-phrases/html/omniglot-phrases.html → data/omniglot-phrases/cards.csv
 
 The HTML table has English → Sinhala rows. Each Sinhala cell may contain
 multiple variants (separated by <br /> or newlines), each with optional
@@ -16,7 +16,7 @@ import html
 import re
 from pathlib import Path
 
-HTML_FILE = Path("raw/html/omniglot-phrases.html")
+HTML_FILE = Path("raw/omniglot-phrases/html/omniglot-phrases.html")
 OUT_CSV   = Path("data/omniglot-phrases/cards.csv")
 
 

@@ -17,7 +17,7 @@ images and audio on every card.
 
 | Short name | Source | Output file |
 |------------|--------|-------------|
-| **ankiweb-vocab** | `raw/anki/ankiweb-vocab.apkg` | `output/Deutsch Sinhala.txt` |
+| **ankiweb-vocab** | `raw/ankiweb-vocab/apkg/ankiweb-vocab.apkg` | `output/Deutsch Sinhala.txt` |
 | **omniglot-phrases** | `data/omniglot-phrases/cards.csv` (parsed from HTML, one-off) | `output/Omniglot Phrasen.txt` |
 
 The pipeline runs per-deck. Each deck has its own translations file so German translations
@@ -28,8 +28,8 @@ never bleed across decks.
 ```
 ── vocab deck ──────────────────────────────────────────────────────────────────
 
-raw/anki/ankiweb-vocab.apkg
-    └─[make export]──────────→ data/ankiweb-vocab/cards.csv  +  raw/audio/ankiweb-vocab/
+raw/ankiweb-vocab/apkg/ankiweb-vocab.apkg
+    └─[make export]──────────→ data/ankiweb-vocab/cards.csv  +  raw/ankiweb-vocab/audio/
     └─[make review]──────────→ parsed/ankiweb-vocab/cards.csv    ← curate here
                                 parsed/ankiweb-vocab/fixes.csv    ← blacklist/replace rules
 
@@ -159,7 +159,7 @@ target than Flashcard Deluxe.
 
 ## Data sources
 
-### Active: `raw/anki/ankiweb-vocab.apkg`
+### Active: `raw/ankiweb-vocab/apkg/ankiweb-vocab.apkg`
 
 108 vocabulary cards, Sinhala → English, with one human MP3 recording per card.
 
@@ -169,9 +169,9 @@ Categories: fruits, clothing, days of the week, colors, time words, ~50 colloqui
 **Source:** AnkiWeb shared deck ID 505727396 — https://ankiweb.net/shared/info/505727396
 **Download:** manual (via AnkiWeb "Download" button), no username or author information available.
 
-Exported to `data/ankiweb-vocab/` via `scripts/export_apkg.py`; recordings in `raw/audio/ankiweb-vocab/`.
+Exported to `data/ankiweb-vocab/` via `scripts/export_apkg.py`; recordings in `raw/ankiweb-vocab/audio/`.
 
-### Active: `raw/anki/everflip-sinhala-*.apkg` (8 decks)
+### Active: `raw/everflip-sinhala-*/apkg/*.apkg` (8 decks)
 
 ~100 cards across 8 thematic decks: colors (12), days (11), family (12), greetings (11),
 nouns (15), numbers (15), politeness (12), questions (12). No audio. Sinhala → English only.
@@ -255,12 +255,11 @@ Model: `qwen3.5` with `--think false`. Prompt asks for the definite article for 
 
 ```
 Sinhala-Flashcards/
-├── raw/
-│   ├── anki/               source .apkg files
-│   ├── audio/              human recordings, per source (never modified)
-│   │   ├── ankiweb-vocab/
-│   │   └── omniglot-phrases/
-│   └── html/               scraped source HTML + acquisition scripts
+├── raw/                    immutable source files, one subdirectory per source
+│   └── <source>/
+│       ├── apkg/           source .apkg files (for Anki-derived sources)
+│       ├── audio/          human recordings (never modified)
+│       └── html/           scraped source HTML (for HTML-parsed sources)
 ├── parsed/                 cleaned card data (deterministic; editable)
 │   └── <deck>/
 │       ├── cards.csv           canonical card data per deck
@@ -337,8 +336,8 @@ symbols to German speakers — e.g. "ā = langes a wie in 'Vater'", "ś = sch".
 
 ### ✓ Done: Improve vocab recording quality
 
-Originals in `raw/audio/ankiweb-vocab/` (never modified).
-Enhanced files in `data/ankiweb-vocab/audio_enhanced/` — picked up automatically
+Originals in `raw/ankiweb-vocab/audio/` (never modified).
+Enhanced files in `parsed/ankiweb-vocab/audio_enhanced/` — picked up automatically
 by `build_deck.py` (overrides originals for matching filenames).
 
 Filters applied: `highpass=f=80` → `afftdn=nr=20:nf=-40` → `loudnorm=I=-16`.
@@ -357,8 +356,8 @@ Mozilla Common Voice) before investing in this.
 
 ### ✓ Done: Parse Omniglot phrases HTML → CSV
 
-Source: `raw/html/omniglot-phrases.html` — the Omniglot "Useful phrases in Sinhala" page,
-73 English→Sinhala phrases. Audio files in `raw/audio/omniglot-phrases/` (43 of 73 have audio).
+Source: `raw/omniglot-phrases/html/omniglot-phrases.html` — the Omniglot "Useful phrases in Sinhala" page,
+73 English→Sinhala phrases. Audio files in `raw/omniglot-phrases/audio/` (43 of 73 have audio).
 
 **Source URL:** https://www.omniglot.com/language/phrases/sinhala.htm (saved manually).
 

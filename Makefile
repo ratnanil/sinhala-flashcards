@@ -17,8 +17,9 @@
 #   make deck                     build all output files
 
 PYTHON      := python3
-APKG_FILES   := $(wildcard raw/anki/*.apkg)
-DATA_CSVS    := $(patsubst raw/anki/%.apkg, data/%/cards.csv, $(APKG_FILES))
+# Each source with an .apkg sits at raw/<source>/apkg/<source>.apkg
+SOURCES      := $(patsubst raw/%/apkg/%.apkg, %, $(wildcard raw/*/apkg/*.apkg))
+DATA_CSVS    := $(patsubst %, data/%/cards.csv, $(SOURCES))
 # Manually maintained card CSVs (not generated from .apkg)
 MANUAL_CSVS  := data/omniglot-phrases/cards.csv
 PARSED_CSVS  := $(wildcard parsed/*/cards.csv)
@@ -33,9 +34,9 @@ all: deck
 #    Reruns only when the .apkg or the script changes.
 export: $(DATA_CSVS)
 
-data/%/cards.csv: raw/anki/%.apkg scripts/export_apkg.py
+data/%/cards.csv: raw/%/apkg/%.apkg scripts/export_apkg.py
 	@echo "Exporting $<..."
-	$(PYTHON) scripts/export_apkg.py --audio-out raw/audio/$* $< data/$*
+	$(PYTHON) scripts/export_apkg.py --audio-out raw/$*/audio $< data/$*
 
 # 2. Populate parsed/ CSVs (safe to rerun — never overwrites existing rows)
 review: $(DATA_CSVS) $(MANUAL_CSVS) scripts/prepare_review.py
@@ -57,12 +58,12 @@ images: scripts/generate_images.py
 #   enriched/ankiweb-vocab/translations.csv
 #   enriched/omniglot-phrases/translations.csv
 # Enhance Sinhala recording quality (highpass + afftdn noise reduction + loudnorm)
-# Output goes to data/ankiweb-vocab/audio_enhanced/ — originals in raw/audio/ untouched.
+# Output goes to parsed/*/audio_enhanced/ — originals in raw/*/audio/ untouched.
 # Safe to rerun; already-enhanced files are skipped unless --force is passed.
 enhance: scripts/enhance_audio.py
 	$(PYTHON) scripts/enhance_audio.py
 	$(PYTHON) scripts/enhance_audio.py \
-		--src raw/audio/omniglot-phrases \
+		--src raw/omniglot-phrases/audio \
 		--dst parsed/omniglot-phrases/audio_enhanced
 
 romanize: parsed/ankiweb-vocab/cards.csv parsed/omniglot-phrases/cards.csv scripts/generate_romanization.py

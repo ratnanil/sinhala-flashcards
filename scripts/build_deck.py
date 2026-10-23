@@ -106,10 +106,10 @@ def main():
     tts_registry_path = Path(args.tts_audio)   if args.tts_audio   else enriched / 'tts' / 'registry.csv'
 
     # Build a unified audio map: filename → full path.
-    # Raw originals come from raw/audio/*/, enhanced from <audio-root>/*/audio_enhanced/.
+    # Raw originals come from raw/*/audio/, enhanced from parsed/*/audio_enhanced/.
     # Enhanced is scanned second so it overwrites originals for the same filename.
     audio_map: dict[str, Path] = {}
-    for audio_dir in sorted(Path('raw/audio').glob('*')):
+    for audio_dir in sorted(Path('raw').glob('*/audio')):
         if audio_dir.is_dir():
             for f in audio_dir.iterdir():
                 if f.is_file():

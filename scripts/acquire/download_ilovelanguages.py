@@ -2,8 +2,8 @@
 """
 Download Sinhala audio files from the I Love Languages lesson HTML pages.
 
-Parses all Sinhala Lesson*.html files in raw/html/ilovelanguages/ and downloads
-the corresponding MP3s to raw/audio/ilovelanguages/.
+Parses all Sinhala Lesson*.html files in raw/ilovelanguages/html/ and downloads
+the corresponding MP3s to raw/ilovelanguages/audio/.
 
 HTML files were saved manually from https://ilovelanguages.org/sinhala/
 Audio served from https://ilovelanguages.org/audio/sinhala/<filename>.mp3
@@ -12,7 +12,7 @@ Idempotent — already-downloaded files are skipped.
 
 Usage:
     python scripts/acquire/download_ilovelanguages.py
-    python scripts/acquire/download_ilovelanguages.py --html-dir raw/html/ilovelanguages --audio-out raw/audio/ilovelanguages
+    python scripts/acquire/download_ilovelanguages.py --html-dir raw/ilovelanguages/html --audio-out raw/ilovelanguages/audio
 """
 
 import argparse
@@ -23,7 +23,11 @@ from pathlib import Path
 from bs4 import BeautifulSoup
 
 BASE_URL = 'https://ilovelanguages.org/'
-HEADERS  = {'User-Agent': 'Mozilla/5.0'}
+HEADERS  = {
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:128.0) Gecko/20100101 Firefox/128.0',
+    'Accept':     'audio/webm,audio/ogg,audio/wav,audio/*;q=0.9,*/*;q=0.5',
+    'Referer':    'https://ilovelanguages.org/sinhala/',
+}
 
 
 def collect_audio_urls(html_dir: Path) -> dict[str, str]:
@@ -44,9 +48,9 @@ def collect_audio_urls(html_dir: Path) -> dict[str, str]:
 
 def main():
     parser = argparse.ArgumentParser(description='Download ilovelanguages Sinhala audio')
-    parser.add_argument('--html-dir',  default='raw/html/ilovelanguages',
+    parser.add_argument('--html-dir',  default='raw/ilovelanguages/html',
                         help='Directory containing lesson HTML files')
-    parser.add_argument('--audio-out', default='raw/audio/ilovelanguages',
+    parser.add_argument('--audio-out', default='raw/ilovelanguages/audio',
                         help='Directory to write MP3 files')
     args = parser.parse_args()
 

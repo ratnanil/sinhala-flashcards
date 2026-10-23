@@ -2,10 +2,10 @@
 """
 Parse ilovelanguages lesson HTMLs → data/ilovelanguages/cards.csv
 
-Reads all Sinhala Lesson*.html files from raw/html/ilovelanguages/ and
+Reads all Sinhala Lesson*.html files from raw/ilovelanguages/html/ and
 produces a single deduplicated cards CSV.
 
-Audio files are only referenced if they exist in raw/audio/ilovelanguages/
+Audio files are only referenced if they exist in raw/ilovelanguages/audio/
 (103 files are genuinely absent from the server and were never downloaded).
 
 Run once, then `make review` to create parsed/ilovelanguages/cards.csv.
@@ -19,8 +19,8 @@ from pathlib import Path
 
 from bs4 import BeautifulSoup
 
-HTML_DIR  = Path('raw/html/ilovelanguages')
-AUDIO_DIR = Path('raw/audio/ilovelanguages')
+HTML_DIR  = Path('raw/ilovelanguages/html')
+AUDIO_DIR = Path('raw/ilovelanguages/audio')
 OUT_CSV   = Path('data/ilovelanguages/cards.csv')
 
 
