@@ -105,14 +105,19 @@ def main():
     parser.add_argument('--source', default=None,
                         help='cards.csv to read words from (default: all data/*/cards.csv)')
     parser.add_argument('--model',  default='qwen3.5', help='Ollama model to use')
-    parser.add_argument('--images', default='enriched/images', help='Output image directory (default: enriched/images)')
+    parser.add_argument('--images', default=None, help='Output image directory (default: enriched/<source>/images/)')
     args = parser.parse_args()
 
-    images_dir = Path(args.images)
-    images_dir.mkdir(exist_ok=True)
-
-    # Collect unique English words across sources
     sources = [Path(args.source)] if args.source else sorted(Path('parsed').glob('*/cards.csv'))
+
+    if args.images:
+        images_dir = Path(args.images)
+    elif args.source:
+        images_dir = Path('enriched') / Path(args.source).parent.name / 'images'
+    else:
+        print('ERROR: --images required when no --source given (no single source to default to)')
+        sys.exit(1)
+    images_dir.mkdir(parents=True, exist_ok=True)
     words = {}  # sanitized_name → original word
     for src in sources:
         with open(src, newline='', encoding='utf-8') as f:

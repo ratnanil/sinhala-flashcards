@@ -54,8 +54,8 @@ images: scripts/generate_images.py
 # Requires: ollama serve running
 #
 # Each deck has its own translations file — translations never bleed across decks.
-#   enriched/translations/ankiweb-vocab.csv   ← vocab + everflip (simple words)
-#   enriched/translations/omniglot-phrases.csv ← omniglot phrases
+#   enriched/ankiweb-vocab/translations.csv
+#   enriched/omniglot-phrases/translations.csv
 # Enhance Sinhala recording quality (highpass + afftdn noise reduction + loudnorm)
 # Output goes to data/ankiweb-vocab/audio_enhanced/ — originals in raw/audio/ untouched.
 # Safe to rerun; already-enhanced files are skipped unless --force is passed.
@@ -85,7 +85,7 @@ audio: parsed/ankiweb-vocab/cards.csv scripts/generate_audio.py
 		--text-column german --lang de \
 		--source parsed/ankiweb-vocab/cards.csv
 
-audio-phrases: parsed/omniglot-phrases/cards.csv enriched/translations/omniglot-phrases.csv scripts/generate_audio.py
+audio-phrases: parsed/omniglot-phrases/cards.csv enriched/omniglot-phrases/translations.csv scripts/generate_audio.py
 	$(PYTHON) scripts/generate_audio.py --engine edge-tts --voice de-DE-KatjaNeural \
 		--text-column german --lang de \
 		--source parsed/omniglot-phrases/cards.csv
@@ -93,17 +93,16 @@ audio-phrases: parsed/omniglot-phrases/cards.csv enriched/translations/omniglot-
 # 5. Build final deck files
 DECK_DEPS := scripts/build_deck.py
 
-output/Deutsch\ Sinhala.txt: parsed/ankiweb-vocab/cards.csv enriched/translations/ankiweb-vocab.csv $(DECK_DEPS)
+output/Deutsch\ Sinhala.txt: parsed/ankiweb-vocab/cards.csv enriched/ankiweb-vocab/translations.csv $(DECK_DEPS)
 	$(PYTHON) scripts/build_deck.py \
 		--source parsed/ankiweb-vocab/cards.csv \
 		--side1 german --side3 romanized --image-key english \
 		--out "output/Deutsch Sinhala.txt"
 
-output/Omniglot\ Phrasen.txt: parsed/omniglot-phrases/cards.csv enriched/translations/omniglot-phrases.csv $(DECK_DEPS)
+output/Omniglot\ Phrasen.txt: parsed/omniglot-phrases/cards.csv enriched/omniglot-phrases/translations.csv $(DECK_DEPS)
 	$(PYTHON) scripts/build_deck.py \
 		--source parsed/omniglot-phrases/cards.csv \
 		--side1 german --side3 romanized --image-key english \
-		--translations enriched/translations/omniglot-phrases.csv \
 		--out "output/Omniglot Phrasen.txt"
 
 deck: output/Deutsch\ Sinhala.txt output/Omniglot\ Phrasen.txt

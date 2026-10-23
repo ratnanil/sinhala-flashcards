@@ -9,7 +9,7 @@ Already-translated words are skipped — safe to rerun.
 Usage:
     python scripts/generate_translations.py
     python scripts/generate_translations.py --source parsed/ankiweb-vocab/cards.csv
-    python scripts/generate_translations.py --model qwen3.5 --output enriched/translations/ankiweb-vocab.csv
+    python scripts/generate_translations.py --model qwen3.5 --output enriched/ankiweb-vocab/translations.csv
 """
 
 import argparse
@@ -110,9 +110,10 @@ def main():
         output_path = Path(args.output)
     elif args.source:
         source_name = Path(args.source).parent.name
-        output_path = Path('enriched/translations') / f'{source_name}.csv'
+        output_path = Path('enriched') / source_name / 'translations.csv'
     else:
-        output_path = Path('enriched/translations/ankiweb-vocab.csv')
+        print('ERROR: --output required when no --source given (no single source to default to)')
+        import sys; sys.exit(1)
 
     existing = {} if args.force else load_existing(output_path)
     words    = collect_words(sources, args.source_deck)

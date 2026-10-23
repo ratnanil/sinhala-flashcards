@@ -33,9 +33,9 @@ raw/anki/ankiweb-vocab.apkg
     └─[make review]──────────→ parsed/ankiweb-vocab/cards.csv    ← curate here
                                 parsed/ankiweb-vocab/fixes.csv    ← blacklist/replace rules
 
-    [make translate]─────────→ enriched/translations/ankiweb-vocab.csv  (EN→DE)
-    [make images]────────────→ enriched/images/<word>.png               (emoji PNGs)
-    [make audio]─────────────→ enriched/tts/audio/ + enriched/tts/registry.csv  (German TTS)
+    [make translate]─────────→ enriched/ankiweb-vocab/translations.csv  (EN→DE)
+    [make images]────────────→ enriched/<source>/images/<word>.png               (emoji PNGs)
+    [make audio]─────────────→ enriched/ankiweb-vocab/tts/audio/ + enriched/ankiweb-vocab/tts/registry.csv  (German TTS)
 
     └─[make deck]────────────→ output/Deutsch Sinhala.txt
 
@@ -46,8 +46,8 @@ data/omniglot-phrases/cards.csv  (generated once by scripts/parse_omniglot.py)
     └─[make review]──────────→ parsed/omniglot-phrases/cards.csv  ← curate here
                                 parsed/omniglot-phrases/fixes.csv  ← blacklist/replace rules
 
-    [make translate-phrases]─→ enriched/translations/omniglot-phrases.csv  (EN→DE)
-    [make audio-phrases]─────→ enriched/tts/audio/ + enriched/tts/registry.csv  (German TTS)
+    [make translate-phrases]─→ enriched/omniglot-phrases/translations.csv  (EN→DE)
+    [make audio-phrases]─────→ enriched/omniglot-phrases/tts/audio/ + enriched/omniglot-phrases/tts/registry.csv  (German TTS)
 
     └─[make deck]────────────→ output/Omniglot Phrasen.txt
 
@@ -66,7 +66,7 @@ make deck    — builds all output files in one shot
 All TTS uses edge-tts (Microsoft neural voices, online). Requires internet at generation time
 but only needs to run once. Install: `pip install edge-tts`.
 
-Generated audio is stored in `enriched/tts/audio/` and registered in `enriched/tts/registry.csv`
+Generated audio is stored in `enriched/<source>/tts/audio/` and registered in `enriched/<source>/tts/registry.csv`
 (join table keyed by card ID + lang), so reruns never overwrite existing entries.
 
 ### German (side 1) — active
@@ -237,10 +237,10 @@ Notes:
 
 ## Translation (EN → DE)
 
-Stored in `enriched/translations/<source>.csv` as a join table (`english,german`), one file per
+Stored in `enriched/<source>/translations.csv` as a join table (`english,german`), one file per
 source deck, separate from card data so translations can be curated independently.
 
-`build_deck.py` auto-loads `enriched/translations/<source>.csv` at build time and fills the
+`build_deck.py` auto-loads `enriched/<source>/translations.csv` at build time and fills the
 `german` column for any card where it is empty.
 
 ```bash
@@ -267,13 +267,12 @@ Sinhala-Flashcards/
 │       ├── fixes.csv           blacklist/replace rules (hand-edited)
 │       └── audio_enhanced/     ffmpeg-processed recordings (make enhance)
 ├── enriched/               LLM/model-generated assets (expensive, non-deterministic)
-│   ├── images/                 emoji PNGs keyed by English word (make images)
-│   ├── translations/
-│   │   ├── ankiweb-vocab.csv   EN→DE for vocab deck (make translate)
-│   │   └── omniglot-phrases.csv  EN→DE for phrases deck (make translate-phrases)
-│   └── tts/
-│       ├── registry.csv        TTS audio join table, keyed by card ID + lang
-│       └── audio/              TTS-generated audio files (make audio)
+│   └── <source>/               one directory per source deck, mirrors parsed/
+│       ├── translations.csv    EN→DE join table (make translate / translate-phrases)
+│       ├── images/             emoji PNGs (make images)
+│       └── tts/
+│           ├── registry.csv    TTS audio join table, keyed by card ID + lang
+│           └── audio/          TTS-generated audio files (make audio)
 ├── data/                   exported CSVs from raw .apkg (intermediate, make export)
 │   └── <deck>/cards.csv
 ├── output/                 final Flashcard Deluxe import files + Media/ folders
@@ -298,7 +297,7 @@ Sinhala-Flashcards/
 | `--side2` | `sinhala` | Column for side 2 text |
 | `--image-key` | same as `--side1` | Column used to look up emoji PNG; set to `english` when side 1 is German |
 | `--source-deck` | *(all)* | Filter to one source deck, e.g. `ankiweb-vocab` |
-| `--translations` | `enriched/translations/<source>.csv` | EN→DE join table; auto-detected per source, skipped if missing |
+| `--translations` | `enriched/<source>/translations.csv` | EN→DE join table; auto-detected per source, skipped if missing |
 
 ## Current state & next steps
 
