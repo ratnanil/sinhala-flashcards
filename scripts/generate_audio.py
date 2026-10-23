@@ -61,23 +61,14 @@ def load_translations(path: Path) -> dict:
         return {row['english']: row['german'] for row in csv.DictReader(f)}
 
 
-def load_cards(master_csv: Path, text_column: str, source_deck: str | None,
+def load_cards(source: Path, text_column: str, source_deck: str | None,
                translations: dict) -> list:
-    """Return list of {id, text, audio_file} dicts from master.csv."""
+    """Return list of {id, text, audio_file} dicts from a cards CSV."""
     cards = []
-    with open(master_csv, newline='', encoding='utf-8') as f:
+    with open(source, newline='', encoding='utf-8') as f:
         for row in csv.DictReader(f):
             if source_deck and row.get('source_deck') != source_deck:
                 continue
-            # Respect status column (review CSVs): only process approved cards
-            status = row.get('status', '').strip().lower()
-            if status and status != 'ok':
-                continue
-            # Apply hand-curated fixes
-            if row.get('sinhala_fix', '').strip():
-                row['sinhala'] = row['sinhala_fix'].strip()
-            if row.get('english_fix', '').strip():
-                row['english'] = row['english_fix'].strip()
             text = row.get(text_column, '').strip()
             if not text and translations:
                 text = translations.get(row.get('english', '').strip(), '')
@@ -141,8 +132,8 @@ def main():
                         help='edge-tts voice (default: si-LK-SameeraNeural)')
     parser.add_argument('--model',       default=None,
                         help='Piper .onnx model path (required when --engine piper)')
-    parser.add_argument('--source',      default='data/master.csv',
-                        help='Cards CSV to read from (default: data/master.csv)')
+    parser.add_argument('--source',      default='parsed/ankiweb-vocab/cards.csv',
+                        help='Cards CSV to read from (default: parsed/ankiweb-vocab/cards.csv)')
     parser.add_argument('--text-column', default='sinhala',
                         help='CSV column to synthesize (default: sinhala)')
     parser.add_argument('--lang',        default='si',

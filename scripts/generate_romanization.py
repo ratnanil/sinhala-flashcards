@@ -17,7 +17,7 @@ A separate "reading guide" todo will annotate these symbols for German speakers.
 
 Usage:
     python scripts/generate_romanization.py                    # vocab deck
-    python scripts/generate_romanization.py --source review/omniglot-phrases.csv
+    python scripts/generate_romanization.py --source parsed/omniglot-phrases/cards.csv
     python scripts/generate_romanization.py --force            # overwrite existing
 """
 
@@ -122,8 +122,8 @@ FIELDNAMES = ['id', 'source_deck', 'sinhala', 'english', 'romanized',
 
 def main():
     parser = argparse.ArgumentParser(description='Generate IAST romanization for Sinhala review CSVs')
-    parser.add_argument('--source', default='review/ankiweb-vocab.csv',
-                        help='Review CSV to update (default: review/ankiweb-vocab.csv)')
+    parser.add_argument('--source', default='parsed/ankiweb-vocab/cards.csv',
+                        help='Review CSV to update (default: parsed/ankiweb-vocab/cards.csv)')
     parser.add_argument('--force', action='store_true',
                         help='Overwrite existing romanized values')
     args = parser.parse_args()

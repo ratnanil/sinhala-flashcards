@@ -58,8 +58,8 @@ def main():
     parser = argparse.ArgumentParser(description="Enhance Sinhala voice recordings")
     parser.add_argument("--src",   default="raw/audio/ankiweb-vocab",
                         help="Source directory (default: raw/audio/ankiweb-vocab)")
-    parser.add_argument("--dst",   default="data/ankiweb-vocab/audio_enhanced",
-                        help="Output directory (default: data/ankiweb-vocab/audio_enhanced)")
+    parser.add_argument("--dst",   default="parsed/ankiweb-vocab/audio_enhanced",
+                        help="Output directory (default: parsed/ankiweb-vocab/audio_enhanced)")
     parser.add_argument("--force", action="store_true",
                         help="Reprocess files that already exist in output")
     args = parser.parse_args()

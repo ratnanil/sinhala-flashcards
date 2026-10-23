@@ -84,13 +84,8 @@ def collect_words(sources: list, source_deck: str | None = None) -> list:
             for row in csv.DictReader(f):
                 if source_deck and row.get('source_deck', '') != source_deck:
                     continue
-                # Respect status column (review CSVs): skip non-approved cards
-                status = row.get('status', '').strip().lower()
-                if status and status != 'ok':
-                    continue
-                # Prefer english_fix / sinhala_fix if set
-                word     = row.get('english_fix', '').strip() or row.get('english', '').strip()
-                sinhala  = row.get('sinhala_fix', '').strip() or row.get('sinhala', '').strip()
+                word      = row.get('english', '').strip()
+                sinhala   = row.get('sinhala', '').strip()
                 romanized = row.get('romanized', '').strip()
                 if word and word not in seen:
                     seen[word] = {'english': word, 'sinhala': sinhala, 'romanized': romanized}
@@ -100,7 +95,7 @@ def collect_words(sources: list, source_deck: str | None = None) -> list:
 def main():
     parser = argparse.ArgumentParser(description='Generate EN→DE translations via Ollama')
     parser.add_argument('--source', default=None,
-                        help='CSV to read English words from (default: all data/*/cards.csv)')
+                        help='CSV to read English words from (default: all parsed/*/cards.csv)')
     parser.add_argument('--model',  default='qwen3.5', help='Ollama model to use')
     parser.add_argument('--output', default='data/translations.csv',
                         help='Output join table (default: data/translations.csv)')
@@ -111,7 +106,7 @@ def main():
     args = parser.parse_args()
 
     output_path = Path(args.output)
-    sources = [Path(args.source)] if args.source else sorted(Path('data').glob('*/cards.csv'))
+    sources = [Path(args.source)] if args.source else sorted(Path('parsed').glob('*/cards.csv'))
 
     existing = {} if args.force else load_existing(output_path)
     words    = collect_words(sources, args.source_deck)

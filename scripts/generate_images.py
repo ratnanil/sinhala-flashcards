@@ -112,7 +112,7 @@ def main():
     images_dir.mkdir(exist_ok=True)
 
     # Collect unique English words across sources
-    sources = [Path(args.source)] if args.source else sorted(Path('data').glob('*/cards.csv'))
+    sources = [Path(args.source)] if args.source else sorted(Path('parsed').glob('*/cards.csv'))
     words = {}  # sanitized_name → original word
     for src in sources:
         with open(src, newline='', encoding='utf-8') as f:

@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """
-Merge approved review CSVs into data/master.csv.
+Merge parsed cards CSVs into data/master.csv.
 
 Rules:
-  - Only rows with status='ok' are included
-  - sinhala_fix / english_fix override the original fields when non-empty
   - Duplicates (same sinhala text) are resolved by preferring the row with audio
 
+Note: this script is a legacy intermediate step and will be removed once
+all pipeline scripts read from parsed/ directly.
+
 Usage:
-    python scripts/merge.py [--review review/] [--out data/master.csv]
+    python scripts/merge.py [--parsed parsed/] [--out data/master.csv]
 """
 
 import argparse
@@ -25,36 +26,30 @@ def derive_category(source_deck: str) -> str:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Merge approved review CSVs into master.csv')
-    parser.add_argument('--review', default='review',          help='Review directory')
+    parser = argparse.ArgumentParser(description='Merge parsed cards CSVs into master.csv')
+    parser.add_argument('--parsed', default='parsed',          help='Parsed directory')
     parser.add_argument('--out',    default='data/master.csv', help='Output master CSV')
     args = parser.parse_args()
 
-    review_root = Path(args.review)
+    parsed_root = Path(args.parsed)
     out_path    = Path(args.out)
 
-    review_files = sorted(review_root.glob('*.csv'))
-    if not review_files:
-        print('No review files found.')
+    cards_files = sorted(parsed_root.glob('*/cards.csv'))
+    if not cards_files:
+        print('No parsed cards files found.')
         return
 
     all_rows = []
     counts = {}
-    for review_csv in review_files:
+    for cards_csv in cards_files:
         n = 0
-        with open(review_csv, newline='', encoding='utf-8') as f:
+        with open(cards_csv, newline='', encoding='utf-8') as f:
             for row in csv.DictReader(f):
-                if row['status'].strip().lower() != 'ok':
-                    continue
-                if row['sinhala_fix'].strip():
-                    row['sinhala'] = row['sinhala_fix'].strip()
-                if row['english_fix'].strip():
-                    row['english'] = row['english_fix'].strip()
                 row.setdefault('german', '')
                 row['category'] = derive_category(row['source_deck'])
                 all_rows.append(row)
                 n += 1
-        counts[review_csv.name] = n
+        counts[cards_csv.parent.name] = n
 
     # Deduplicate on sinhala: prefer rows with audio
     seen = {}
@@ -74,9 +69,9 @@ def main():
 
     total_in  = len(all_rows)
     total_out = len(deduped)
-    print(f'Merged {total_in} approved cards from {len(counts)} decks')
+    print(f'Merged {total_in} cards from {len(counts)} decks')
     for name, n in counts.items():
-        print(f'  {name}: {n} ok')
+        print(f'  {name}: {n}')
     if total_in != total_out:
         print(f'  {total_in - total_out} duplicates removed')
     print(f'→ {out_path}: {total_out} cards')

@@ -14,13 +14,13 @@ Column mapping (Flashcard Deluxe names):
 
 Usage:
     # English → Sinhala with audio
-    python scripts/build_deck.py --source data/ankiweb-vocab/cards.csv
+    python scripts/build_deck.py --source parsed/ankiweb-vocab/cards.csv
 
     # German → Sinhala with audio (once german column is populated)
-    python scripts/build_deck.py --source data/master.csv --side1 german
+    python scripts/build_deck.py --source parsed/ankiweb-vocab/cards.csv --side1 german
 
     # Custom output path
-    python scripts/build_deck.py --source data/ankiweb-vocab/cards.csv --out output/vocab.txt
+    python scripts/build_deck.py --source parsed/ankiweb-vocab/cards.csv --out output/vocab.txt
 """
 
 import argparse
@@ -49,6 +49,32 @@ def load_tts_audio(path: Path, lang: str) -> dict:
     with open(path, newline='', encoding='utf-8') as f:
         return {row['id']: row['audio_file']
                 for row in csv.DictReader(f) if row['lang'] == lang}
+
+
+def load_fixes(cards_path: Path) -> tuple:
+    """Load fixes.csv from the same directory as cards.csv.
+    Returns (blacklisted_ids, sinhala_replacements, english_replacements).
+    """
+    fixes_path = cards_path.parent / 'fixes.csv'
+    blacklist, sinhala_fixes, english_fixes = set(), {}, {}
+    if not fixes_path.exists():
+        return blacklist, sinhala_fixes, english_fixes
+    with open(fixes_path, newline='', encoding='utf-8') as f:
+        for row in csv.DictReader(f):
+            t   = row.get('type', '').strip()
+            key = row.get('key', '').strip()
+            rep = row.get('replacement', '').strip()
+            if not key:
+                continue
+            if t == 'blacklist':
+                blacklist.add(key)
+            elif t == 'blacklist_audio':
+                blacklist.add(key)   # key is audio filename; matched below
+            elif t == 'replace_sinhala':
+                sinhala_fixes[key] = rep
+            elif t == 'replace_english':
+                english_fixes[key] = rep
+    return blacklist, sinhala_fixes, english_fixes
 
 
 def main():
@@ -86,7 +112,7 @@ def main():
             for f in audio_dir.iterdir():
                 if f.is_file():
                     audio_map[f.name] = f
-    for audio_dir in sorted(audio_root.glob('*/audio_enhanced')):
+    for audio_dir in sorted(Path('parsed').glob('*/audio_enhanced')):
         for f in audio_dir.iterdir():
             if f.is_file():
                 audio_map[f.name] = f  # overrides original
@@ -97,6 +123,7 @@ def main():
     tts_audio_de = load_tts_audio(Path(args.tts_audio), lang='de')
     if tts_audio_si or tts_audio_de:
         print(f'Loaded TTS audio: {len(tts_audio_si)} Sinhala, {len(tts_audio_de)} German')
+    blacklist, sinhala_fixes, english_fixes = load_fixes(source)
     out_path   = Path(args.out) if args.out else Path('output') / f'{source.parent.name}.txt'
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -112,16 +139,17 @@ def main():
             if args.source_deck and row.get('source_deck', '') != args.source_deck:
                 continue
 
-            # Respect status column (review CSVs): only include approved cards
-            status = row.get('status', '').strip().lower()
-            if status and status != 'ok':
+            # Apply fixes: blacklist by card id or audio filename
+            card_id   = row.get('id', '')
+            audio_ref = row.get('audio_file', '')
+            if card_id in blacklist or audio_ref in blacklist:
                 continue
 
-            # Apply hand-curated fixes from review CSVs
-            if row.get('sinhala_fix', '').strip():
-                row['sinhala'] = row['sinhala_fix'].strip()
-            if row.get('english_fix', '').strip():
-                row['english'] = row['english_fix'].strip()
+            # Apply text replacements
+            if card_id in sinhala_fixes:
+                row['sinhala'] = sinhala_fixes[card_id]
+            if card_id in english_fixes:
+                row['english'] = english_fixes[card_id]
 
             # Fill Sinhala audio from TTS join table if not already set in source
             if tts_audio_si and not row.get('audio_file', '').strip():

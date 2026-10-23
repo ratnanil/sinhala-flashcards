@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """
-Generate review CSVs from exported deck CSVs.
+Populate parsed/<deck>/cards.csv from exported deck CSVs.
 
-Existing review files are never overwritten — only new rows are appended,
+Existing cards are never overwritten — only new rows are appended,
 identified by a stable ID derived from the sinhala text.
+A fixes.csv stub is created alongside cards.csv if it does not exist yet.
 
 Usage:
-    python scripts/prepare_review.py [--data data/] [--review review/]
+    python scripts/prepare_review.py [--data data/] [--parsed parsed/]
 """
 
 import argparse
@@ -19,8 +20,8 @@ PAREN_RE = re.compile(r'^(.*?)\s*\(([^)]+)\)\s*$')
 DIACRITIC_RE = re.compile(r'[āēīōūňṁṃḍṭḷṅñÀ-öø-ÿ]', re.IGNORECASE)
 ENGLISH_PARENS = {'singular', 'plural', 'turn on', 'digit is 0', 'the everyday spoken form'}
 
-FIELDNAMES = ['id', 'source_deck', 'sinhala', 'english', 'romanized',
-              'audio_file', 'status', 'sinhala_fix', 'english_fix', 'notes']
+FIELDNAMES  = ['id', 'source_deck', 'sinhala', 'english', 'romanized', 'audio_file']
+FIX_FIELDS  = ['type', 'key', 'value', 'replacement', 'note']
 
 
 def looks_like_romanization(s: str) -> bool:
@@ -56,27 +57,34 @@ def card_id(deck_name: str, sinhala: str) -> str:
     return f'{short}_{h}'
 
 
-def load_existing_ids(review_path: Path) -> set:
-    if not review_path.exists():
+def load_existing_ids(cards_path: Path) -> set:
+    if not cards_path.exists():
         return set()
-    with open(review_path, newline='', encoding='utf-8') as f:
+    with open(cards_path, newline='', encoding='utf-8') as f:
         return {row['id'] for row in csv.DictReader(f)}
 
 
+def ensure_fixes_stub(fixes_path: Path) -> None:
+    if not fixes_path.exists():
+        with open(fixes_path, 'w', newline='', encoding='utf-8') as f:
+            csv.DictWriter(f, fieldnames=FIX_FIELDS).writeheader()
+
+
 def main():
-    parser = argparse.ArgumentParser(description='Generate review CSVs from exported decks')
+    parser = argparse.ArgumentParser(description='Populate parsed/<deck>/cards.csv from exported decks')
     parser.add_argument('--data',   default='data',   help='Root data directory')
-    parser.add_argument('--review', default='review', help='Output review directory')
+    parser.add_argument('--parsed', default='parsed', help='Output parsed directory')
     args = parser.parse_args()
 
     data_root   = Path(args.data)
-    review_root = Path(args.review)
-    review_root.mkdir(exist_ok=True)
+    parsed_root = Path(args.parsed)
 
     for cards_csv in sorted(data_root.glob('*/cards.csv')):
         deck_name   = cards_csv.parent.name
-        review_path = review_root / f'{deck_name}.csv'
-        existing    = load_existing_ids(review_path)
+        out_dir     = parsed_root / deck_name
+        out_dir.mkdir(parents=True, exist_ok=True)
+        out_path    = out_dir / 'cards.csv'
+        existing    = load_existing_ids(out_path)
 
         new_rows = []
         with open(cards_csv, newline='', encoding='utf-8') as f:
@@ -85,7 +93,6 @@ def main():
                 if cid in existing:
                     continue
                 english, romanized = extract_romanized(row['english'])
-                # If source CSV already has a romanized column, prefer it
                 if not romanized:
                     romanized = row.get('romanized', '').strip()
                 new_rows.append({
@@ -95,25 +102,21 @@ def main():
                     'english':     english,
                     'romanized':   romanized,
                     'audio_file':  row['audio_file'],
-                    'status':      'pending',
-                    'sinhala_fix': '',
-                    'english_fix': '',
-                    'notes':       row.get('notes', ''),
                 })
 
         if not new_rows:
             print(f'  {deck_name}: no new cards')
-            continue
+        else:
+            write_header = not out_path.exists()
+            with open(out_path, 'a', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
+                if write_header:
+                    writer.writeheader()
+                writer.writerows(new_rows)
+            status = 'created' if write_header else 'appended'
+            print(f'  {deck_name}: {status} {len(new_rows)} cards → {out_path}')
 
-        write_header = not review_path.exists()
-        with open(review_path, 'a', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
-            if write_header:
-                writer.writeheader()
-            writer.writerows(new_rows)
-
-        status = 'created' if write_header else 'appended'
-        print(f'  {deck_name}: {status} {len(new_rows)} cards → {review_path}')
+        ensure_fixes_stub(out_dir / 'fixes.csv')
 
 
 if __name__ == '__main__':
