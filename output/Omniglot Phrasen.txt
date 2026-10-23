@@ -1,74 +1,74 @@
-Text 1	Text 2	Text 3	Picture 1	Sound 1	Sound 2
-Willkommen	සාදරයෙන් පිලිගන්නවා	sadarayen piligannawa	welcome.png	welcome_de.mp3	welcome_sinhala.mp3
-Hallo	ආයුඛෝවන්	āyubūvan	hello.png	hello_de.mp3	hello_sinhala.mp3
-Wie geht es dir?	කොහොමද?	kohomadha?	how_are_you.png	how_are_you_de.mp3	howareyou1_sinhala.mp3
-Wie geht es dir?	කොහොමද  සැප  සනිප?	kohomadha saepa sanīpa?	how_are_you.png	how_are_you_de.mp3	howareyou2_sinhala.mp3
-Wie geht es dir?	සැප සනීප කොහොමද?	saepa sanīpa kohomadha?	how_are_you.png	how_are_you_de.mp3	howareyou3_sinhala.mp3
-Antwort auf "Wie geht's?"	හොඳින් ඉන්නවා	hondhin innavā		reply_to_how_are_you_de.mp3	fine1_sinhala.mp3
-Antwort auf "Wie geht's?"	ඉස්තුති  මම  හොදින්  ඉන්නව	istuti mama hodin innava		reply_to_how_are_you_de.mp3	fine2_sinhala.mp3
-Lang nicht gesehen	හුග කාලෙකින් දක්කෙ	huga kālekin dakke		long_time_no_see_de.mp3	longtimenosee_sinhala.mp3
-Wie heißt du?	ඔයාගේ  නම  මොකක්ද	oyāgē nama mokakda?	what_s_your_name.png	what_s_your_name_de.mp3	name_sinhala.mp3
-Mein Name ist ...	මගේ නම ...	magē nama ...		my_name_is_de.mp3	mynameis_sinhala.mp3
-Woher kommst du?	ඔබ කොහෙන්ද?	oba kohendha?		where_are_you_from_de.mp3	wherefrom_sinhala.mp3
-Ich komme aus ...	මම ... වෙන්/යෙන්	mama ... ven/yen		i_m_from_de.mp3	imfrom_sinhala.mp3
-Es ist mir eine Freude, Sie kennenzulernen.	ඔබ දැනගන්න ලැබිම සතුටක්	oba dhanagana lakēma sathutak			meet_sinhala.mp3
-Guten Morgen	සුභ උදෑසනක්	subha udhāsanak	good_morning.png	good_morning_de.mp3	goodmorning_sinhala.mp3
-Guten Tag	සුභ දවාලක්	subha dhavalak			goodafternoon_sinhala.mp3
-Guten Abend	සුභ සැන්දෑවක්	subha sandhavak			goodevening_sinhala.mp3
-Gute Nacht	සුභ රාත්‍රියක්	subha rāhthriyak	good_night.png	good_night_de.mp3	goodnight_sinhala.mp3
-Auf Wiedersehen	ගිහිල්ලා එන්නම්	gihillā ennam		goodbye_de.mp3	goodbye1_sinhala.mp3
-Auf Wiedersehen	හරි, ගිහින් එන්න	hari, gihin enna		goodbye_de.mp3	goodbye2_sinhala.mp3
-Auf Wiedersehen	මම යනවා	mama yanawā		goodbye_de.mp3	goodbye3_sinhala.mp3
-Auf Wiedersehen	හා	hā		goodbye_de.mp3	goodbye4_sinhala.mp3
-Viel Glück!	සභ ගමන්!	sabha gaman		good_luck_de.mp3	goodluck1_sinhala.mp3
-Viel Glück!	වාසනා වේවා!	vāsanā vēvvā!		good_luck_de.mp3	goodluck2_sinhala.mp3
-Prost! Gute Gesundheit!	වාසනාවන්!	vāsatāvan			cheers1_sinhala.mp3
-Haben Sie einen schönen Tag!	සුභ දවසක්	subha davasak			haveaniceday_sinhala.mp3
-Guten Appetit	විනොදෙන් කන්න	vinoden kanna		bon_appetit_have_a_nice_meal_de.mp3	bonappetit_sinhala.mp3
-Guten Reise	සුභ ගමනක් වෙවා	subha gamanak vēvā			bonvoyage_sinhala.mp3
-Verstehen Sie?	තේරෙනවා ද	tērenavā da?			doyouunderstand_sinhala.mp3
-Ich verstehe	මත තේරෙනවා	mata tērenavā		i_understand_de.mp3	understand_sinhala.mp3
-Ich verstehe nicht	මට ඔබව තේරැමි ගන්න බැනැ	mata obava therum ganna baha		i_don_t_understand_de.mp3	nounderstand_sinhala.mp3
-Bitte sprechen Sie langsamer.	කරැණාකරල හෙමින් කියන්න	karunākarala hemin kiyanna		please_speak_more_slowly_de.mp3	slowly_sinhala.mp3
-Bitte sagen Sie das noch einmal.	මට ඔබව තේරැමි ගන්න බැනැ	mata obava therum ganna baha		i_don_t_understand_de.mp3	nounderstand_sinhala.mp3
-Entschuldigung	සමාවත්ත	samāvena		excuse_me_de.mp3	excuseme1_si.mp3
-Wie viel kostet das?	කියද?	kiyeda?		how_much_is_this_de.mp3	howmuch1_si.mp3
-Wie viel kostet das?	කියද මෙක?	kiyeda meka?		how_much_is_this_de.mp3	howmuch2_si.mp3
-Antwort auf danke sagen	එකත කමක් න	ehkata kamak na		reply_to_thank_you_de.mp3	yourewelcome_si.mp3
-Ich bin verloren	මට පාර වැරදිලා	mata pāra waradilla		i_m_lost_de.mp3	imlost1_si.mp3
-Ich bin verloren	මම අතරමං වෙලා	mama ataramang wella		i_m_lost_de.mp3	imlost2_si.mp3
-Lass mich in Ruhe!	කරුනකරල මත සනසිල්ලය් ඉන්න දෙන්න	karunakarala mata sanasillay inna denna		leave_me_alone_de.mp3	leavemealone_si.mp3
-Hilfe!	මත උදව් ඕන!	mata udaw ōna!		help_de.mp3	help_si.mp3
-Feuer!	ගිනි ගන්නව!	gini gannawa!			fire_si.mp3
-Hallo	හලෝ	halō	hello.png		
-Prost! Gute Gesundheit!	ඡය වේවා!	jaya vevā!		cheers_good_health_de.mp3	
-Bitte schreiben Sie es auf.	කරැණාකරල මට ඒක ලියලා දෙන්න පුළුවන්ද	karunākarala mata eka liyala dhenna puluvandha?			
-Sprechen Sie Englisch?	ඔබ ඉංග්රිසි කථා කරනවාද	oba ingreesi kathaa karanavadha?		do_you_speak_english_de.mp3	
-Sprechen Sie Singhalesisch?	ඔබ සිංහළ කථා කරනවාද	oba sinhala kathā karanavadha?		do_you_speak_sinhala_de.mp3	
-Ja, ein bisschen	මට එය කියන්න පුළුවන්	maṭa eya kiyanna pūl̠ūvan		yes_a_little_de.mp3	
-Wie sagt man ... auf Singhalesisch?	... කියන්නේ කොහොමද?	... kiyanne kohomadha?		how_do_you_say_in_sinhala_de.mp3	
-Entschuldigung	අචසර	avasara		excuse_me_de.mp3	
-Entschuldigung	මට සමාවෙන්න	mata samāvenna		sorry_de.mp3	
-Entschuldigung	කණගාටුයි	kan'agāṭuuyi		sorry_de.mp3	
-Bitte	කරැණාකරල	karunakarala	please.png	please_de.mp3	
-Danke	ඉස්තුති	istuti	thank_you.png	thank_you_de.mp3	
-Danke	බොහොම ස්තුතියි	bohoma stutiyi	thank_you.png	thank_you_de.mp3	
-Wo ist die Toilette?	වැසිකිළිය කොහෙද ථියෙන්නෙ	wasikiliya koheda thiyenne?		where_s_the_toilet_bathroom_de.mp3	
-Dieser Herr wird alles bezahlen.	මේ කරුණාවන්ත මහත්මයා හැමදේටම ගෙවයි	me karunawantha mahathmaya hamadetama gewai		this_gentleman_will_pay_for_everything_de.mp3	
-Diese Dame wird alles bezahlen.	මේ කරුණාවන්ත කාන්තාව හැමදේටම ගෙවයි	me karunawantha kanthawa hamadetama gewai		this_lady_will_pay_for_everything_de.mp3	
-Möchten Sie mit mir tanzen?	ඔයා මාත් එක්ක ‍පොඩ්ඩක් නටන්න කැමතිද?	oya math ekka poddak natanna kamathida?			
-Ich liebe dich	මම  ඔයාට  ආදරෙයි	mama oyāṭa ādareyi		i_love_you_de.mp3	
-Bald wieder gesund	ඉක්මනින් සනීප වෙන්න	ikmaning sanēpa wenna		get_well_soon_de.mp3	
-Gott segne dich!	ආයුබෝවන්!	Ayubowan			
-Geh weg!	මෙතනින් යන	metanin yana!		go_away_de.mp3	
-Stopp!	නවතින්න!	navatinna!		stop_de.mp3	
-Rufen Sie die Polizei an!	පොලිසිය කතා කරන්න	polisiya katā karanna!		call_the_police_de.mp3	
-die Weihnachtsgrüße	සුභ නත්තලක්	subha natthalak		christmas_greetings_de.mp3	
-die Neujahrsglückwünsche	සුබ නව වසරක් වේවා	suba nava vasarak		new_year_greetings_de.mp3	
-die Ostergrüße	සුභ පාස්කුවක්	subha paskuwak		easter_greetings_de.mp3	
-die Geburtstagsgrüße	සුභ උපන් දිනයක්	subha upan dinayak			
-die Geburtstagsgrüße	සුභපැතුම්	sūbhapætūm		birthday_greetings_de.mp3	
-Glückwunsch!	සුබපැතුම්!	subapætum!		congratulations_de.mp3	
-Eine Sprache reicht nie aus.	එක භාෂාවක් දනගෙන කවදාවන් මදි	eka bhāṣawak danagena kawadāwan madi		one_language_is_never_enough_de.mp3	
-Mein Hovercraft ist voller Aale.	මාගේ වායු පා යානයේ ආඳන් පිරී ඇත	māgē vāyu pā yānayē āňdan pirī æta		my_hovercraft_is_full_of_eels_de.mp3	hovercraft1_si.mp3
-Mein Hovercraft ist voller Aale.	මගේ වායු පා යානෙ ආඳො  පිරීලා	magē vāyu pā yāne āňdā pirīlā		my_hovercraft_is_full_of_eels_de.mp3	hovercraft2_si.mp3
+Text 1	Text 2	Text 3	Picture 1	Sound 2
+Willkommen	සාදරයෙන් පිලිගන්නවා	sadarayen piligannawa	welcome.png	welcome_sinhala.mp3
+Hallo	ආයුඛෝවන්	āyubūvan	hello.png	hello_sinhala.mp3
+Wie geht es dir?	කොහොමද?	kohomadha?	how_are_you.png	howareyou1_sinhala.mp3
+Wie geht es dir?	කොහොමද  සැප  සනිප?	kohomadha saepa sanīpa?	how_are_you.png	howareyou2_sinhala.mp3
+Wie geht es dir?	සැප සනීප කොහොමද?	saepa sanīpa kohomadha?	how_are_you.png	howareyou3_sinhala.mp3
+Antwort auf "Wie geht's?"	හොඳින් ඉන්නවා	hondhin innavā		fine1_sinhala.mp3
+Antwort auf "Wie geht's?"	ඉස්තුති  මම  හොදින්  ඉන්නව	istuti mama hodin innava		fine2_sinhala.mp3
+Lang nicht gesehen	හුග කාලෙකින් දක්කෙ	huga kālekin dakke		longtimenosee_sinhala.mp3
+Wie heißt du?	ඔයාගේ  නම  මොකක්ද	oyāgē nama mokakda?	what_s_your_name.png	name_sinhala.mp3
+Mein Name ist ...	මගේ නම ...	magē nama ...		mynameis_sinhala.mp3
+Woher kommst du?	ඔබ කොහෙන්ද?	oba kohendha?		wherefrom_sinhala.mp3
+Ich komme aus ...	මම ... වෙන්/යෙන්	mama ... ven/yen		imfrom_sinhala.mp3
+Es ist mir eine Freude, Sie kennenzulernen.	ඔබ දැනගන්න ලැබිම සතුටක්	oba dhanagana lakēma sathutak		meet_sinhala.mp3
+Guten Morgen	සුභ උදෑසනක්	subha udhāsanak	good_morning.png	goodmorning_sinhala.mp3
+Guten Tag	සුභ දවාලක්	subha dhavalak		goodafternoon_sinhala.mp3
+Guten Abend	සුභ සැන්දෑවක්	subha sandhavak		goodevening_sinhala.mp3
+Gute Nacht	සුභ රාත්‍රියක්	subha rāhthriyak	good_night.png	goodnight_sinhala.mp3
+Auf Wiedersehen	ගිහිල්ලා එන්නම්	gihillā ennam		goodbye1_sinhala.mp3
+Auf Wiedersehen	හරි, ගිහින් එන්න	hari, gihin enna		goodbye2_sinhala.mp3
+Auf Wiedersehen	මම යනවා	mama yanawā		goodbye3_sinhala.mp3
+Auf Wiedersehen	හා	hā		goodbye4_sinhala.mp3
+Viel Glück!	සභ ගමන්!	sabha gaman		goodluck1_sinhala.mp3
+Viel Glück!	වාසනා වේවා!	vāsanā vēvvā!		goodluck2_sinhala.mp3
+Prost! Gute Gesundheit!	වාසනාවන්!	vāsatāvan		cheers1_sinhala.mp3
+Haben Sie einen schönen Tag!	සුභ දවසක්	subha davasak		haveaniceday_sinhala.mp3
+Guten Appetit	විනොදෙන් කන්න	vinoden kanna		bonappetit_sinhala.mp3
+Guten Reise	සුභ ගමනක් වෙවා	subha gamanak vēvā		bonvoyage_sinhala.mp3
+Verstehen Sie?	තේරෙනවා ද	tērenavā da?		doyouunderstand_sinhala.mp3
+Ich verstehe	මත තේරෙනවා	mata tērenavā		understand_sinhala.mp3
+Ich verstehe nicht	මට ඔබව තේරැමි ගන්න බැනැ	mata obava therum ganna baha		nounderstand_sinhala.mp3
+Bitte sprechen Sie langsamer.	කරැණාකරල හෙමින් කියන්න	karunākarala hemin kiyanna		slowly_sinhala.mp3
+Bitte sagen Sie das noch einmal.	මට ඔබව තේරැමි ගන්න බැනැ	mata obava therum ganna baha		nounderstand_sinhala.mp3
+Entschuldigung	සමාවත්ත	samāvena		excuseme1_si.mp3
+Wie viel kostet das?	කියද?	kiyeda?		howmuch1_si.mp3
+Wie viel kostet das?	කියද මෙක?	kiyeda meka?		howmuch2_si.mp3
+Antwort auf danke sagen	එකත කමක් න	ehkata kamak na		yourewelcome_si.mp3
+Ich bin verloren	මට පාර වැරදිලා	mata pāra waradilla		imlost1_si.mp3
+Ich bin verloren	මම අතරමං වෙලා	mama ataramang wella		imlost2_si.mp3
+Lass mich in Ruhe!	කරුනකරල මත සනසිල්ලය් ඉන්න දෙන්න	karunakarala mata sanasillay inna denna		leavemealone_si.mp3
+Hilfe!	මත උදව් ඕන!	mata udaw ōna!		help_si.mp3
+Feuer!	ගිනි ගන්නව!	gini gannawa!		fire_si.mp3
+Hallo	හලෝ	halō	hello.png	
+Prost! Gute Gesundheit!	ඡය වේවා!	jaya vevā!		
+Bitte schreiben Sie es auf.	කරැණාකරල මට ඒක ලියලා දෙන්න පුළුවන්ද	karunākarala mata eka liyala dhenna puluvandha?		
+Sprechen Sie Englisch?	ඔබ ඉංග්රිසි කථා කරනවාද	oba ingreesi kathaa karanavadha?		
+Sprechen Sie Singhalesisch?	ඔබ සිංහළ කථා කරනවාද	oba sinhala kathā karanavadha?		
+Ja, ein bisschen	මට එය කියන්න පුළුවන්	maṭa eya kiyanna pūl̠ūvan		
+Wie sagt man ... auf Singhalesisch?	... කියන්නේ කොහොමද?	... kiyanne kohomadha?		
+Entschuldigung	අචසර	avasara		
+Entschuldigung	මට සමාවෙන්න	mata samāvenna		
+Entschuldigung	කණගාටුයි	kan'agāṭuuyi		
+Bitte	කරැණාකරල	karunakarala	please.png	
+Danke	ඉස්තුති	istuti	thank_you.png	
+Danke	බොහොම ස්තුතියි	bohoma stutiyi	thank_you.png	
+Wo ist die Toilette?	වැසිකිළිය කොහෙද ථියෙන්නෙ	wasikiliya koheda thiyenne?		
+Dieser Herr wird alles bezahlen.	මේ කරුණාවන්ත මහත්මයා හැමදේටම ගෙවයි	me karunawantha mahathmaya hamadetama gewai		
+Diese Dame wird alles bezahlen.	මේ කරුණාවන්ත කාන්තාව හැමදේටම ගෙවයි	me karunawantha kanthawa hamadetama gewai		
+Möchten Sie mit mir tanzen?	ඔයා මාත් එක්ක ‍පොඩ්ඩක් නටන්න කැමතිද?	oya math ekka poddak natanna kamathida?		
+Ich liebe dich	මම  ඔයාට  ආදරෙයි	mama oyāṭa ādareyi		
+Bald wieder gesund	ඉක්මනින් සනීප වෙන්න	ikmaning sanēpa wenna		
+Gott segne dich!	ආයුබෝවන්!	Ayubowan		
+Geh weg!	මෙතනින් යන	metanin yana!		
+Stopp!	නවතින්න!	navatinna!		
+Rufen Sie die Polizei an!	පොලිසිය කතා කරන්න	polisiya katā karanna!		
+die Weihnachtsgrüße	සුභ නත්තලක්	subha natthalak		
+die Neujahrsglückwünsche	සුබ නව වසරක් වේවා	suba nava vasarak		
+die Ostergrüße	සුභ පාස්කුවක්	subha paskuwak		
+die Geburtstagsgrüße	සුභ උපන් දිනයක්	subha upan dinayak		
+die Geburtstagsgrüße	සුභපැතුම්	sūbhapætūm		
+Glückwunsch!	සුබපැතුම්!	subapætum!		
+Eine Sprache reicht nie aus.	එක භාෂාවක් දනගෙන කවදාවන් මදි	eka bhāṣawak danagena kawadāwan madi		
+Mein Hovercraft ist voller Aale.	මාගේ වායු පා යානයේ ආඳන් පිරී ඇත	māgē vāyu pā yānayē āňdan pirī æta		hovercraft1_si.mp3
+Mein Hovercraft ist voller Aale.	මගේ වායු පා යානෙ ආඳො  පිරීලා	magē vāyu pā yāne āňdā pirīlā		hovercraft2_si.mp3
