@@ -1,0 +1,9 @@
+# Audio files (raw recordings and generated TTS)
+*.mp3
+*.wav
+
+# TTS model
+models/
+
+# Logs
+*.log
