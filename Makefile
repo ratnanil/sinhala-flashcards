@@ -19,10 +19,10 @@
 #   make master                   optional: merge all decks into data/master.csv
 
 PYTHON      := python3
-APKG_FILES   := $(wildcard anki/*.apkg)
-DATA_CSVS    := $(patsubst anki/%.apkg, data/%/cards.csv, $(APKG_FILES))
+APKG_FILES   := $(wildcard raw/anki/*.apkg)
+DATA_CSVS    := $(patsubst raw/anki/%.apkg, data/%/cards.csv, $(APKG_FILES))
 # Manually maintained card CSVs (not generated from .apkg)
-MANUAL_CSVS  := data/sinhalaphrases/cards.csv
+MANUAL_CSVS  := data/omniglot-phrases/cards.csv
 REVIEW_CSVS  := $(wildcard review/*.csv)
 
 REMOTE := Dropbox:Flashcards Deluxe
@@ -35,9 +35,9 @@ all: deck
 #    Reruns only when the .apkg or the script changes.
 export: $(DATA_CSVS)
 
-data/%/cards.csv: anki/%.apkg scripts/export_apkg.py
+data/%/cards.csv: raw/anki/%.apkg scripts/export_apkg.py
 	@echo "Exporting $<..."
-	$(PYTHON) scripts/export_apkg.py $< data/$*
+	$(PYTHON) scripts/export_apkg.py --audio-out raw/audio/$* $< data/$*
 
 # 2. Populate review/ CSVs (safe to rerun — never overwrites existing rows)
 review: $(DATA_CSVS) $(MANUAL_CSVS) scripts/prepare_review.py
@@ -65,66 +65,66 @@ master: data/master.csv
 # Only fetches images that don't exist yet — safe to rerun.
 # Requires: ollama serve running
 images: scripts/generate_images.py
-	$(PYTHON) scripts/generate_images.py --source review/Sinhala_to_English_vocab.csv
-	$(PYTHON) scripts/generate_images.py --source review/sinhalaphrases.csv
+	$(PYTHON) scripts/generate_images.py --source review/ankiweb-vocab.csv
+	$(PYTHON) scripts/generate_images.py --source review/omniglot-phrases.csv
 
 # Preprocessing: generate EN→DE translations (outside main pipeline)
 # Only translates missing words — safe to rerun.
 # Requires: ollama serve running
 #
 # Each deck has its own translations file — translations never bleed across decks.
-#   data/translations.csv            ← vocab + everflip (simple words)
-#   data/sinhalaphrases/translations.csv  ← omniglot phrases
+#   data/translations.csv                    ← vocab + everflip (simple words)
+#   data/omniglot-phrases/translations.csv   ← omniglot phrases
 # Enhance Sinhala recording quality (highpass + afftdn noise reduction + loudnorm)
-# Output goes to data/Sinhala_to_English_vocab/audio_enhanced/ — originals untouched.
+# Output goes to data/ankiweb-vocab/audio_enhanced/ — originals in raw/audio/ untouched.
 # Safe to rerun; already-enhanced files are skipped unless --force is passed.
 enhance: scripts/enhance_audio.py
 	$(PYTHON) scripts/enhance_audio.py
 	$(PYTHON) scripts/enhance_audio.py \
-		--src data/sinhalaphrases/audio \
-		--dst data/sinhalaphrases/audio_enhanced
+		--src raw/audio/omniglot-phrases \
+		--dst data/omniglot-phrases/audio_enhanced
 
-romanize: review/Sinhala_to_English_vocab.csv review/sinhalaphrases.csv scripts/generate_romanization.py
-	$(PYTHON) scripts/generate_romanization.py --source review/Sinhala_to_English_vocab.csv
-	$(PYTHON) scripts/generate_romanization.py --source review/sinhalaphrases.csv
+romanize: review/ankiweb-vocab.csv review/omniglot-phrases.csv scripts/generate_romanization.py
+	$(PYTHON) scripts/generate_romanization.py --source review/ankiweb-vocab.csv
+	$(PYTHON) scripts/generate_romanization.py --source review/omniglot-phrases.csv
 
-translate: review/Sinhala_to_English_vocab.csv scripts/generate_translations.py
-	$(PYTHON) scripts/generate_translations.py --source review/Sinhala_to_English_vocab.csv
+translate: review/ankiweb-vocab.csv scripts/generate_translations.py
+	$(PYTHON) scripts/generate_translations.py --source review/ankiweb-vocab.csv
 
-translate-phrases: review/sinhalaphrases.csv scripts/generate_translations.py
+translate-phrases: review/omniglot-phrases.csv scripts/generate_translations.py
 	$(PYTHON) scripts/generate_translations.py \
-		--source review/sinhalaphrases.csv \
-		--output data/sinhalaphrases/translations.csv
+		--source review/omniglot-phrases.csv \
+		--output data/omniglot-phrases/translations.csv
 
 # 4. Generate TTS audio for cards without recordings
 #    German (side 1): per deck, each using its own translations file
 #    Sinhala (side 2): deferred — vocab has human recordings, everflip not yet in build
-audio: review/Sinhala_to_English_vocab.csv scripts/generate_audio.py
+audio: review/ankiweb-vocab.csv scripts/generate_audio.py
 #	$(PYTHON) scripts/generate_audio.py --engine edge-tts --voice si-LK-SameeraNeural
 	$(PYTHON) scripts/generate_audio.py --engine edge-tts --voice de-DE-KatjaNeural \
 		--text-column german --lang de \
-		--source review/Sinhala_to_English_vocab.csv
+		--source review/ankiweb-vocab.csv
 
-audio-phrases: review/sinhalaphrases.csv data/sinhalaphrases/translations.csv scripts/generate_audio.py
+audio-phrases: review/omniglot-phrases.csv data/omniglot-phrases/translations.csv scripts/generate_audio.py
 	$(PYTHON) scripts/generate_audio.py --engine edge-tts --voice de-DE-KatjaNeural \
 		--text-column german --lang de \
-		--source review/sinhalaphrases.csv \
-		--translations data/sinhalaphrases/translations.csv
+		--source review/omniglot-phrases.csv \
+		--translations data/omniglot-phrases/translations.csv
 
 # 5. Build final deck files
 DECK_DEPS := scripts/build_deck.py
 
-output/Deutsch\ Sinhala.txt: review/Sinhala_to_English_vocab.csv data/translations.csv $(DECK_DEPS)
+output/Deutsch\ Sinhala.txt: review/ankiweb-vocab.csv data/translations.csv $(DECK_DEPS)
 	$(PYTHON) scripts/build_deck.py \
-		--source review/Sinhala_to_English_vocab.csv \
+		--source review/ankiweb-vocab.csv \
 		--side1 german --side3 romanized --image-key english \
 		--out "output/Deutsch Sinhala.txt"
 
-output/Omniglot\ Phrasen.txt: review/sinhalaphrases.csv data/sinhalaphrases/translations.csv $(DECK_DEPS)
+output/Omniglot\ Phrasen.txt: review/omniglot-phrases.csv data/omniglot-phrases/translations.csv $(DECK_DEPS)
 	$(PYTHON) scripts/build_deck.py \
-		--source review/sinhalaphrases.csv \
+		--source review/omniglot-phrases.csv \
 		--side1 german --side3 romanized --image-key english \
-		--translations data/sinhalaphrases/translations.csv \
+		--translations data/omniglot-phrases/translations.csv \
 		--out "output/Omniglot Phrasen.txt"
 
 deck: output/Deutsch\ Sinhala.txt output/Omniglot\ Phrasen.txt

@@ -15,7 +15,7 @@ Already-processed files are skipped (idempotent).
 
 Usage:
     python scripts/enhance_audio.py
-    python scripts/enhance_audio.py --src data/Sinhala_to_English_vocab/audio \
+    python scripts/enhance_audio.py --src raw/audio/ankiweb-vocab \
                                      --dst data/audio_enhanced
     python scripts/enhance_audio.py --force   # reprocess everything
 """
@@ -56,10 +56,10 @@ def enhance(src: Path, dst: Path) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(description="Enhance Sinhala voice recordings")
-    parser.add_argument("--src",   default="data/Sinhala_to_English_vocab/audio",
-                        help="Source directory (default: data/Sinhala_to_English_vocab/audio)")
-    parser.add_argument("--dst",   default="data/Sinhala_to_English_vocab/audio_enhanced",
-                        help="Output directory (default: data/Sinhala_to_English_vocab/audio_enhanced)")
+    parser.add_argument("--src",   default="raw/audio/ankiweb-vocab",
+                        help="Source directory (default: raw/audio/ankiweb-vocab)")
+    parser.add_argument("--dst",   default="data/ankiweb-vocab/audio_enhanced",
+                        help="Output directory (default: data/ankiweb-vocab/audio_enhanced)")
     parser.add_argument("--force", action="store_true",
                         help="Reprocess files that already exist in output")
     args = parser.parse_args()

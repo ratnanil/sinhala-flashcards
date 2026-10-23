@@ -94,12 +94,15 @@ def write_csv(cards: list, out_path: Path) -> None:
 def main():
     parser = argparse.ArgumentParser(description='Export Anki .apkg to CSV + media')
     parser.add_argument('apkg',       help='Path to .apkg file')
-    parser.add_argument('output_dir', help='Output directory')
+    parser.add_argument('output_dir', help='Output directory for cards.csv')
+    parser.add_argument('--audio-out', default=None,
+                        help='Directory for audio files (default: <output_dir>/audio)')
     args = parser.parse_args()
 
     apkg_path = Path(args.apkg)
     out_dir   = Path(args.output_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
+    audio_out = Path(args.audio_out) if args.audio_out else out_dir / 'audio'
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
@@ -116,7 +119,7 @@ def main():
         print(f'  {len(cards)} cards')
 
         print('Copying audio...')
-        copy_media(tmp_path, media_map, out_dir / 'audio', cards)
+        copy_media(tmp_path, media_map, audio_out, cards)
 
         csv_path = out_dir / 'cards.csv'
         print(f'Writing {csv_path}...')

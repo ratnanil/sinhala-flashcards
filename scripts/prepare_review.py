@@ -52,7 +52,7 @@ def card_id(deck_name: str, sinhala: str) -> str:
     h = hashlib.md5(sinhala.encode()).hexdigest()[:8]
     short = (deck_name
              .replace('everflip-sinhala-', '')
-             .replace('Sinhala_to_English_vocab', 'vocab'))
+             .replace('ankiweb-vocab', 'vocab'))
     return f'{short}_{h}'
 
 

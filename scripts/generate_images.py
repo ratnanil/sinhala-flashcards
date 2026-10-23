@@ -11,7 +11,7 @@ making them reusable across decks.
 Usage:
     # ensure ollama is running first: ollama serve
     python scripts/generate_images.py
-    python scripts/generate_images.py --source data/Sinhala_to_English_vocab/cards.csv
+    python scripts/generate_images.py --source data/ankiweb-vocab/cards.csv
     python scripts/generate_images.py --model qwen3.5 --images images/
 """
 

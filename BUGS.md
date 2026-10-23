@@ -1,7 +1,7 @@
 # Deutsch Sinhala — Known Bugs
 
 Deck: `output/Deutsch Sinhala.txt`
-Source: `review/Sinhala_to_English_vocab.csv` + `data/translations.csv`
+Source: `review/ankiweb-vocab.csv` + `data/translations.csv`
 
 ---
 
@@ -80,7 +80,7 @@ image represents.
 `"tomorrow"` → `images/tomorrow.png`.
 
 **Fix:** Delete `images/tomorrow.png` and either:
-- (a) Regenerate: `python scripts/generate_images.py --source review/Sinhala_to_English_vocab.csv`
+- (a) Regenerate: `python scripts/generate_images.py --source review/ankiweb-vocab.csv`
       (Ollama may pick a different emoji; results vary — may need a few tries).
 - (b) Manually replace with a more unambiguous image (e.g. a calendar page emoji).
 Then run `make deck` to copy the new image into the Media folder.
@@ -104,7 +104,7 @@ correctly references the recording, but the recording itself is wrong.
 (නවත්තන්න). Options:
 - Re-record manually and drop the file into the appropriate `data/` audio folder.
 - Generate a Sinhala TTS replacement: delete the `audio_file` value for `vocab_09fa560a`
-  in `review/Sinhala_to_English_vocab.csv` (or set it to empty), then run
+  in `review/ankiweb-vocab.csv` (or set it to empty), then run
   `make audio` with the Sinhala TTS target to synthesize a replacement.
 Then run `make deck`.
 

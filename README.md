@@ -17,8 +17,8 @@ images and audio on every card.
 
 | Short name | Source | Output file |
 |------------|--------|-------------|
-| **vocab** | `anki/Sinhala_to_English_vocab.apkg` | `output/Deutsch Sinhala.txt` |
-| **phrases** | `data/sinhalaphrases/cards.csv` (parsed from HTML, one-off) | `output/Omniglot Phrasen.txt` |
+| **ankiweb-vocab** | `raw/anki/ankiweb-vocab.apkg` | `output/Deutsch Sinhala.txt` |
+| **omniglot-phrases** | `data/omniglot-phrases/cards.csv` (parsed from HTML, one-off) | `output/Omniglot Phrasen.txt` |
 
 The pipeline runs per-deck. Each deck has its own translations file so German translations
 never bleed across decks.
@@ -28,9 +28,9 @@ never bleed across decks.
 ```
 ── vocab deck ──────────────────────────────────────────────────────────────────
 
-anki/Sinhala_to_English_vocab.apkg
-    └─[make export]──────────→ data/Sinhala_to_English_vocab/cards.csv + audio/
-    └─[make review]──────────→ review/Sinhala_to_English_vocab.csv   ← curate here
+raw/anki/ankiweb-vocab.apkg
+    └─[make export]──────────→ data/ankiweb-vocab/cards.csv  +  raw/audio/ankiweb-vocab/
+    └─[make review]──────────→ review/ankiweb-vocab.csv          ← curate here
     └─[make approve DECK=…]──→ status: pending → ok / skip
 
     [make translate]─────────→ data/translations.csv             (EN→DE, vocab only)
@@ -42,11 +42,11 @@ anki/Sinhala_to_English_vocab.apkg
 
 ── phrases deck ────────────────────────────────────────────────────────────────
 
-data/sinhalaphrases/cards.csv  (generated once by scripts/parse_omniglot.py)
-    └─[make review]──────────→ review/sinhalaphrases.csv         ← curate here
+data/omniglot-phrases/cards.csv  (generated once by scripts/parse_omniglot.py)
+    └─[make review]──────────→ review/omniglot-phrases.csv       ← curate here
     └─[make approve DECK=…]──→ status: pending → ok / skip
 
-    [make translate-phrases]─→ data/sinhalaphrases/translations.csv  (EN→DE, phrases only)
+    [make translate-phrases]─→ data/omniglot-phrases/translations.csv  (EN→DE, phrases only)
     [make audio-phrases]─────→ data/tts/ + data/tts_audio.csv   (German TTS)
 
     └─[make deck]────────────→ output/Omniglot Phrasen.txt
@@ -67,7 +67,7 @@ make deck    — builds all output files in one shot
 All TTS uses edge-tts (Microsoft neural voices, online). Requires internet at generation time
 but only needs to run once. Install: `pip install edge-tts`.
 
-Generated audio is stored in `data/audio/` and registered in `data/tts_audio.csv` (join table
+Generated audio is stored in `data/tts/` and registered in `data/tts_audio.csv` (join table
 keyed by card ID + lang), so `make master` never overwrites it.
 
 ### German (side 1) — active
@@ -160,16 +160,19 @@ target than Flashcard Deluxe.
 
 ## Data sources
 
-### Active: `anki/Sinhala_to_English_vocab.apkg`
+### Active: `raw/anki/ankiweb-vocab.apkg`
 
 108 vocabulary cards, Sinhala → English, with one human MP3 recording per card.
 
 Categories: fruits, clothing, days of the week, colors, time words, ~50 colloquial verbs
 (infinitive `-න්න` form), question words, adjectives/adverbs.
 
-Exported to `data/` via `scripts/export_apkg.py`.
+**Source:** AnkiWeb shared deck ID 505727396 — https://ankiweb.net/shared/info/505727396
+**Download:** manual (via AnkiWeb "Download" button), no username or author information available.
 
-### Active: `anki/everflip-sinhala-*.apkg` (8 decks)
+Exported to `data/ankiweb-vocab/` via `scripts/export_apkg.py`; recordings in `raw/audio/ankiweb-vocab/`.
+
+### Active: `raw/anki/everflip-sinhala-*.apkg` (8 decks)
 
 ~100 cards across 8 thematic decks: colors (12), days (11), family (12), greetings (11),
 nouns (15), numbers (15), politeness (12), questions (12). No audio. Sinhala → English only.
@@ -178,7 +181,7 @@ The English field contains embedded romanization and usage notes, e.g.:
 `"Hello / Goodbye (āyubōwan; lit. 'may you live long' — standard polite greeting)"` — these
 should be parsed into separate `english`, `romanized`, and `notes` columns during export.
 
-Some overlap with `Sinhala_to_English_vocab.apkg` in colors and days; the vocab deck has audio,
+Some overlap with `ankiweb-vocab.apkg` in colors and days; the vocab deck has audio,
 the everflip decks have romanization. The two complement each other well.
 
 ### Unexplored: GitHub / Kaggle
@@ -255,12 +258,19 @@ Model: `qwen3.5` with `--think false`. Prompt asks for the definite article for 
 
 ```
 Sinhala-Flashcards/
-├── anki/                   source .apkg files
-├── data/                   exported CSVs (data/<deck>/cards.csv + audio/)
-│   ├── audio/              human recordings (from .apkg exports, never modified)
-│   ├── tts/                TTS-generated audio (make audio), separate from human recordings
+├── raw/
+│   ├── anki/               source .apkg files
+│   ├── audio/              human recordings, per source (never modified)
+│   │   ├── ankiweb-vocab/
+│   │   └── omniglot-phrases/
+│   └── html/               scraped source HTML + acquisition scripts
+├── data/                   exported/parsed CSVs per deck (intermediate layer)
+│   ├── <deck>/cards.csv    card data extracted from raw source
+│   ├── <deck>/audio_enhanced/  ffmpeg-processed recordings (make enhance)
+│   ├── omniglot-phrases/translations.csv  EN→DE for phrases deck
+│   ├── tts/                TTS-generated audio (make audio)
 │   ├── master.csv          merged + approved cards (generated by make master)
-│   ├── translations.csv    EN→DE join table, keyed by English word (make translate)
+│   ├── translations.csv    EN→DE join table for vocab deck (make translate)
 │   └── tts_audio.csv       TTS audio join table, keyed by card ID + lang (make audio)
 ├── images/                 emoji PNGs keyed by English word (make images)
 ├── output/                 final Flashcard Deluxe import files + Media/ folders
@@ -287,7 +297,7 @@ Sinhala-Flashcards/
 | `--side1` | `english` | Column for side 1 text |
 | `--side2` | `sinhala` | Column for side 2 text |
 | `--image-key` | same as `--side1` | Column used to look up emoji PNG; set to `english` when side 1 is German |
-| `--source-deck` | *(all)* | Filter to one source deck, e.g. `Sinhala_to_English_vocab` |
+| `--source-deck` | *(all)* | Filter to one source deck, e.g. `ankiweb-vocab` |
 | `--translations` | `data/translations.csv` | EN→DE join table; auto-applied if file exists |
 
 ## Current state & next steps
@@ -328,49 +338,31 @@ symbols to German speakers — e.g. "ā = langes a wie in 'Vater'", "ś = sch".
 
 ### ✓ Done: Improve vocab recording quality
 
-Originals in `data/Sinhala_to_English_vocab/audio/` (never modified).
-Enhanced files in `data/Sinhala_to_English_vocab/audio_enhanced/` — picked up automatically
+Originals in `raw/audio/ankiweb-vocab/` (never modified).
+Enhanced files in `data/ankiweb-vocab/audio_enhanced/` — picked up automatically
 by `build_deck.py` (overrides originals for matching filenames).
 
 Filters applied: `highpass=f=80` → `afftdn=nr=20:nf=-40` → `loudnorm=I=-16`.
 Result: mean volume −44 dB → −20 dB; background noise substantially reduced.
 Rerun with: `make enhance` (skips already-processed files; use `--force` to redo all).
 
-### Todo: Import Cornell Basic Dialogs audio
+### Possible future source: Cornell Basic Dialogs
 
-Source: `data/Sinhala Basic Dialogs Cornell/` — 22 MP3s of English–Sinhala dialog recordings
-from a Cornell language course.
+22 MP3s of English–Sinhala dialog recordings from a Cornell language course. Not currently in
+the repo (removed to keep it lean), but worth revisiting as a source for a conversational deck.
 
-This is a significant undertaking. The pipeline would be:
-
-```
-Cornell Set XX.mp3
-    └─[ffmpeg]──────────→ enhanced audio
-    └─[Whisper ASR]─────→ timestamped transcript (English + Sinhala segments)
-    └─[parse dialogs]───→ per-phrase CSV  (english_phrase, sinhala_phrase, start_ms, end_ms)
-    └─[ffmpeg slice]────→ one audio clip per Sinhala phrase
-    └─[Ollama translate]─→ english_phrase → german
-    └─[edge-tts]────────→ German audio per phrase
-    └─[build_deck.py]───→ new Cornell deck
-```
-
-**Key challenges:**
-- The recordings mix English narration ("Now repeat...") with the actual phrases to learn. The
-  English narration must be discarded; only the Sinhala utterances and their English translations
-  become cards.
-- Whisper needs special handling for mixed-language audio (Sinhala + English in the same file).
-  Running with `--language si` mis-transcribes English segments and vice versa.
-- Parsing the dialog structure reliably across 22 files requires careful prompt/heuristic work.
-
-**Alternative worth exploring first:** look for Sinhala audio datasets that are already segmented
-and labeled (e.g. on OpenSLR, Hugging Face, or Mozilla Common Voice) — these would slot directly
-into the pipeline without the transcription/parsing complexity.
+**Key challenge:** recordings mix English narration ("Now repeat...") with the actual phrases.
+Pipeline would require Whisper ASR with mixed-language handling, dialog parsing, and ffmpeg
+slicing — significant effort. Look for pre-segmented Sinhala audio (OpenSLR, Hugging Face,
+Mozilla Common Voice) before investing in this.
 
 ### ✓ Done: Parse Omniglot phrases HTML → CSV
 
-Source: `data/sinhalaphrases.html` — an Omniglot page with 73 English→Sinhala phrases.
-Audio files in `data/sinhalaphrases/audio/` (43 of 73 cards have audio).
+Source: `raw/html/omniglot-phrases.html` — the Omniglot "Useful phrases in Sinhala" page,
+73 English→Sinhala phrases. Audio files in `raw/audio/omniglot-phrases/` (43 of 73 have audio).
+
+**Source URL:** https://www.omniglot.com/language/phrases/sinhala.htm (saved manually).
 
 Parsed via `scripts/parse_omniglot.py` (one-off, not in the automated pipeline) into
-`data/sinhalaphrases/cards.csv`. Wired into the pipeline as the `phrases` deck:
-`review/sinhalaphrases.csv` → `output/Omniglot Phrasen.txt` + Media/.
+`data/omniglot-phrases/cards.csv`. Wired into the pipeline as the `omniglot-phrases` deck:
+`review/omniglot-phrases.csv` → `output/Omniglot Phrasen.txt` + Media/.

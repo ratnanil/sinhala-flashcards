@@ -35,10 +35,10 @@ output/     final flashcard files; sources can be merged here
 | Proposed layer | Current location |
 |---|---|
 | raw — .apkg files | `anki/` |
-| raw — phrase recordings | `data/sinhalaphrases/audio/` |
-| raw — vocab recordings | `data/Sinhala_to_English_vocab/audio/` |
+| raw — phrase recordings | `data/omniglot-phrases/audio/` |
+| raw — vocab recordings | `data/ankiweb-vocab/audio/` |
 | parsed — structured cards | `data/*/cards.csv` |
-| enriched — translations | `data/translations.csv`, `data/sinhalaphrases/translations.csv` |
+| enriched — translations | `data/translations.csv`, `data/omniglot-phrases/translations.csv` |
 | enriched — TTS | `data/tts/*.mp3`, `data/tts_audio.csv` |
 | enriched — images | `images/` |
 | flashcards | `output/` |
@@ -60,7 +60,7 @@ Neither is captured as a reusable rule — if you re-run the pipeline from scrat
 fixes are gone.
 
 **3. Raw data is scattered.**
-`anki/`, `data/sinhalaphrases/audio/`, `data/Sinhala_to_English_vocab/audio/`,
+`anki/`, `data/omniglot-phrases/audio/`, `data/ankiweb-vocab/audio/`,
 and `data/Sinhala Basic Dialogs Cornell/` (unused Cornell recordings — no parsed
 equivalent yet) all live in different places with no common `raw/` root.
 
@@ -80,8 +80,8 @@ and rarely used.
 raw/
   anki/                             # .apkg files (current: anki/)
   audio/
-    Sinhala_to_English_vocab/       # human vocab recordings
-    sinhalaphrases/                 # phrase recordings
+    ankiweb-vocab/       # human vocab recordings
+    omniglot-phrases/                 # phrase recordings
     Cornell/                        # Cornell dialogs (unused — future source)
 
 parsed/

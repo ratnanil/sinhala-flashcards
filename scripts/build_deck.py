@@ -14,13 +14,13 @@ Column mapping (Flashcard Deluxe names):
 
 Usage:
     # English → Sinhala with audio
-    python scripts/build_deck.py --source data/Sinhala_to_English_vocab/cards.csv
+    python scripts/build_deck.py --source data/ankiweb-vocab/cards.csv
 
     # German → Sinhala with audio (once german column is populated)
     python scripts/build_deck.py --source data/master.csv --side1 german
 
     # Custom output path
-    python scripts/build_deck.py --source data/Sinhala_to_English_vocab/cards.csv --out output/vocab.txt
+    python scripts/build_deck.py --source data/ankiweb-vocab/cards.csv --out output/vocab.txt
 """
 
 import argparse
@@ -78,22 +78,18 @@ def main():
     audio_root   = Path(args.audio_root)
 
     # Build a unified audio map: filename → full path.
-    # Originals come from <audio-root>/*/audio/, enhanced from <audio-root>/*/audio_enhanced/.
+    # Raw originals come from raw/audio/*/, enhanced from <audio-root>/*/audio_enhanced/.
     # Enhanced is scanned second so it overwrites originals for the same filename.
     audio_map: dict[str, Path] = {}
-    for audio_dir in sorted(audio_root.glob('*/audio')):
-        for f in audio_dir.iterdir():
-            if f.is_file():
-                audio_map[f.name] = f
+    for audio_dir in sorted(Path('raw/audio').glob('*')):
+        if audio_dir.is_dir():
+            for f in audio_dir.iterdir():
+                if f.is_file():
+                    audio_map[f.name] = f
     for audio_dir in sorted(audio_root.glob('*/audio_enhanced')):
         for f in audio_dir.iterdir():
             if f.is_file():
                 audio_map[f.name] = f  # overrides original
-    fallback_audio = audio_root / 'audio'
-    if fallback_audio.is_dir():
-        for f in fallback_audio.iterdir():
-            if f.is_file() and f.name not in audio_map:
-                audio_map[f.name] = f
     translations = load_translations(Path(args.translations))
     if translations:
         print(f'Loaded {len(translations)} translations from {args.translations}')
