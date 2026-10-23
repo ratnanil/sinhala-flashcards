@@ -105,7 +105,7 @@ def main():
     parser.add_argument('--source', default=None,
                         help='cards.csv to read words from (default: all data/*/cards.csv)')
     parser.add_argument('--model',  default='qwen3.5', help='Ollama model to use')
-    parser.add_argument('--images', default='images',  help='Output image directory')
+    parser.add_argument('--images', default='enriched/images', help='Output image directory (default: enriched/images)')
     args = parser.parse_args()
 
     images_dir = Path(args.images)

@@ -86,22 +86,22 @@ def main():
     parser.add_argument('--audio',    default='audio_file', help='CSV column for audio filename (default: audio_file)')
     parser.add_argument('--category', default='category',   help='CSV column for category (default: category)')
     parser.add_argument('--out',      default=None,         help='Output file (default: output/<source_dir>.txt)')
-    parser.add_argument('--images',       default='images',              help='Directory of pre-generated emoji PNGs (default: images/)')
+    parser.add_argument('--images',       default='enriched/images',     help='Directory of pre-generated emoji PNGs (default: enriched/images/)')
     parser.add_argument('--source-deck',  default=None,
                         help='Only include cards where source_deck matches this value')
     parser.add_argument('--image-key',    default=None,
                         help='CSV column to use for image lookup (default: same as --side1)')
-    parser.add_argument('--translations', default='data/translations.csv',
-                        help='EN→DE join table CSV (default: data/translations.csv, skipped if missing)')
-    parser.add_argument('--tts-audio',   default='data/tts_audio.csv',
-                        help='TTS audio join table CSV (default: data/tts_audio.csv, skipped if missing)')
-    parser.add_argument('--audio-root',  default='data',
-                        help='Root directory to search for audio (default: data/)')
+    parser.add_argument('--translations', default=None,
+                        help='EN→DE join table CSV (default: enriched/translations/<source>.csv, skipped if missing)')
+    parser.add_argument('--tts-audio',   default='enriched/tts/registry.csv',
+                        help='TTS audio join table CSV (default: enriched/tts/registry.csv, skipped if missing)')
     args = parser.parse_args()
 
     source       = Path(args.source)
     images_dir   = Path(args.images)
-    audio_root   = Path(args.audio_root)
+    # Default translations path: enriched/translations/<source_name>.csv
+    translations_path = Path(args.translations) if args.translations \
+        else Path('enriched/translations') / f'{source.parent.name}.csv'
 
     # Build a unified audio map: filename → full path.
     # Raw originals come from raw/audio/*/, enhanced from <audio-root>/*/audio_enhanced/.
@@ -116,9 +116,9 @@ def main():
         for f in audio_dir.iterdir():
             if f.is_file():
                 audio_map[f.name] = f  # overrides original
-    translations = load_translations(Path(args.translations))
+    translations = load_translations(translations_path)
     if translations:
-        print(f'Loaded {len(translations)} translations from {args.translations}')
+        print(f'Loaded {len(translations)} translations from {translations_path}')
     tts_audio_si = load_tts_audio(Path(args.tts_audio), lang='si')
     tts_audio_de = load_tts_audio(Path(args.tts_audio), lang='de')
     if tts_audio_si or tts_audio_de:
@@ -234,7 +234,7 @@ def main():
 
     # Copy German TTS audio into the Media folder
     if has_audio_de:
-        audio_src = Path('data/tts')
+        audio_src = Path('enriched/tts/audio')
         media_dst = out_path.parent / f'{out_path.stem} Media'
         media_dst.mkdir(exist_ok=True)
         copied = skipped = 0

@@ -138,12 +138,12 @@ def main():
                         help='CSV column to synthesize (default: sinhala)')
     parser.add_argument('--lang',        default='si',
                         help='Language tag for the join table, e.g. si or de (default: si)')
-    parser.add_argument('--audio-dir',   default='data/tts',
-                        help='Directory to write audio files (default: data/tts)')
-    parser.add_argument('--tts-csv',     default='data/tts_audio.csv',
-                        help='Join table for generated audio (default: data/tts_audio.csv)')
-    parser.add_argument('--translations', default='data/translations.csv',
-                        help='EN→DE join table to fill missing text (default: data/translations.csv)')
+    parser.add_argument('--audio-dir',   default='enriched/tts/audio',
+                        help='Directory to write audio files (default: enriched/tts/audio)')
+    parser.add_argument('--tts-csv',     default='enriched/tts/registry.csv',
+                        help='Join table for generated audio (default: enriched/tts/registry.csv)')
+    parser.add_argument('--translations', default=None,
+                        help='EN→DE join table to fill missing text (default: enriched/translations/<source>.csv)')
     parser.add_argument('--source-deck', default=None,
                         help='Only process cards from this source deck')
     parser.add_argument('--force',       action='store_true',
@@ -161,7 +161,10 @@ def main():
     tts_csv   = Path(args.tts_csv)
     audio_dir.mkdir(parents=True, exist_ok=True)
 
-    translations = load_translations(Path(args.translations))
+    source_name = Path(args.source).parent.name
+    translations_path = Path(args.translations) if args.translations \
+        else Path('enriched/translations') / f'{source_name}.csv'
+    translations = load_translations(translations_path)
     existing     = set() if args.force else load_existing(tts_csv)
     cards        = load_cards(Path(args.source), args.text_column, args.source_deck, translations)
 

@@ -1,7 +1,7 @@
 # Deutsch Sinhala — Known Bugs
 
 Deck: `output/Deutsch Sinhala.txt`
-Source: `review/ankiweb-vocab.csv` + `data/translations.csv`
+Source: `parsed/ankiweb-vocab/cards.csv` + `enriched/translations/ankiweb-vocab.csv`
 
 ---
 
@@ -12,15 +12,15 @@ Source: `review/ankiweb-vocab.csv` + `data/translations.csv`
 | mango | `der Mango` | `die Mango` |
 | pineapple | `der Ananas` | `die Ananas` |
 
-**Root cause:** `data/translations.csv` — LLM assigned wrong grammatical gender.
+**Root cause:** `enriched/translations/ankiweb-vocab.csv` — LLM assigned wrong grammatical gender.
 
-**Pipeline step:** `generate_translations.py` (Ollama) writes to `data/translations.csv`;
+**Pipeline step:** `generate_translations.py` (Ollama) writes to `enriched/translations/ankiweb-vocab.csv`;
 `build_deck.py` reads it to fill the German column; `generate_audio.py` reads it to
 synthesize TTS.
 
 **Fix:**
-1. Edit `data/translations.csv`: correct the two entries.
-2. Delete the stale TTS files `data/tts/mango_de.mp3` and `data/tts/pineapple_de.mp3`.
+1. Edit `enriched/translations/ankiweb-vocab.csv`: correct the two entries.
+2. Delete the stale TTS files `enriched/tts/audio/mango_de.mp3` and `enriched/tts/audio/pineapple_de.mp3`.
 3. Run `make audio` to regenerate them, then `make deck` to rebuild.
 
 ---
@@ -33,14 +33,14 @@ synthesize TTS.
 | orange (color) | තැඹිලි | `die Orange` | `orange` | *die Orange* = the fruit; the color is the adjective *orange* (uninflected) |
 | to play | ගහන්න | `spielen` | `schlagen` | *gahanna* = to hit/beat; *spielen* = to play games — wrong register |
 
-**Root cause:** `data/translations.csv` — LLM errors (false cognate for Granate;
+**Root cause:** `enriched/translations/ankiweb-vocab.csv` — LLM errors (false cognate for Granate;
 wrong part-of-speech for orange; imprecise gloss for gahanna).
 
 **Fix:**
-1. Edit `data/translations.csv`: correct `pomegranate`, `orange`, `to play`.
-2. Delete stale TTS files: `data/tts/pomegranate_de.mp3`, `data/tts/orange_de.mp3`,
-   `data/tts/to_play_de.mp3`.
-3. Also delete from `data/tts_audio.csv` the rows for `vocab_1b5610e6`,
+1. Edit `enriched/translations/ankiweb-vocab.csv`: correct `pomegranate`, `orange`, `to play`.
+2. Delete stale TTS files: `enriched/tts/audio/pomegranate_de.mp3`, `enriched/tts/audio/orange_de.mp3`,
+   `enriched/tts/audio/to_play_de.mp3`.
+3. Also delete from `enriched/tts/registry.csv` the rows for `vocab_1b5610e6`,
    `vocab_6dd39305`, `vocab_ca4596ea` (lang=de) so `generate_audio.py` regenerates them.
 4. Run `make audio` then `make deck`.
 
@@ -58,11 +58,11 @@ Flagged for human review.
 | to read | කියවන්න (kiyavanna) | `lesen` | *lesen* is correct; *kiyavanna* also covers recitation — probably fine |
 | to make | හදන්න (hadanna) | `machen` | *hadanna* = make/build/fix/prepare; *machen* is broad and acceptable but `herstellen` or `bauen` could be more precise depending on context |
 
-**Root cause:** `data/translations.csv` — LLM translated the English gloss accurately
+**Root cause:** `enriched/translations/ankiweb-vocab.csv` — LLM translated the English gloss accurately
 but the English gloss itself is a simplification of the Sinhala.
 
-**Fix:** Edit `data/translations.csv` as desired, delete corresponding TTS files, then
-regenerate (`make audio && make deck`).
+**Fix:** Edit `enriched/translations/ankiweb-vocab.csv` as desired, delete corresponding TTS files
+from `enriched/tts/audio/`, then regenerate (`make audio && make deck`).
 
 ---
 
@@ -77,10 +77,10 @@ ambiguous (means both "tomorrow" and "morning"), making a learner unsure which s
 image represents.
 
 **Image key:** The key used in `build_deck.py` is the `english` column value, i.e.
-`"tomorrow"` → `images/tomorrow.png`.
+`"tomorrow"` → `enriched/images/tomorrow.png`.
 
-**Fix:** Delete `images/tomorrow.png` and either:
-- (a) Regenerate: `python scripts/generate_images.py --source review/ankiweb-vocab.csv`
+**Fix:** Delete `enriched/images/tomorrow.png` and either:
+- (a) Regenerate: `python scripts/generate_images.py --source parsed/ankiweb-vocab/cards.csv`
       (Ollama may pick a different emoji; results vary — may need a few tries).
 - (b) Manually replace with a more unambiguous image (e.g. a calendar page emoji).
 Then run `make deck` to copy the new image into the Media folder.
@@ -104,7 +104,7 @@ correctly references the recording, but the recording itself is wrong.
 (නවත්තන්න). Options:
 - Re-record manually and drop the file into the appropriate `data/` audio folder.
 - Generate a Sinhala TTS replacement: delete the `audio_file` value for `vocab_09fa560a`
-  in `review/ankiweb-vocab.csv` (or set it to empty), then run
+  in `parsed/ankiweb-vocab/cards.csv` (or set it to empty), then run
   `make audio` with the Sinhala TTS target to synthesize a replacement.
 Then run `make deck`.
 
@@ -127,13 +127,13 @@ be affected but have not been audited yet.
 **Fix (option A — switch voice, regenerate all):**
 1. In the Makefile `audio` target, change the voice to a monolingual German voice, e.g.:
    `--voice de-DE-KatjaNeural` (female) or `--voice de-DE-ConradNeural` (male).
-2. Delete all `*_de.mp3` files in `data/tts/`.
-3. Delete all `lang=de` rows from `data/tts_audio.csv`.
+2. Delete all `*_de.mp3` files in `enriched/tts/audio/`.
+3. Delete all `lang=de` rows from `enriched/tts/registry.csv`.
 4. Run `make audio && make deck`.
 
 **Fix (option B — patch known-bad cards only):**
-1. For each known-bad card, delete its `data/tts/<english>_de.mp3` file and its row in
-   `data/tts_audio.csv`.
+1. For each known-bad card, delete its `enriched/tts/audio/<english>_de.mp3` file and its row in
+   `enriched/tts/registry.csv`.
 2. Change the voice in the Makefile, then run `make audio && make deck`.
    (New voice will only generate what is missing.)
 
@@ -143,10 +143,10 @@ be affected but have not been audited yet.
 
 | File | Issues |
 |------|--------|
-| `data/translations.csv` | bugs 1, 2, 3 — edit German values directly |
-| `data/tts_audio.csv` | bugs 1, 2, 6 — delete stale/bad rows so audio regenerates |
-| `data/tts/*.mp3` | bugs 1, 2, 6 — delete stale/bad audio files |
-| `images/tomorrow.png` | bug 4 — delete and regenerate or replace manually |
+| `enriched/translations/ankiweb-vocab.csv` | bugs 1, 2, 3 — edit German values directly |
+| `enriched/tts/registry.csv` | bugs 1, 2, 6 — delete stale/bad rows so audio regenerates |
+| `enriched/tts/audio/*.mp3` | bugs 1, 2, 6 — delete stale/bad audio files |
+| `enriched/images/tomorrow.png` | bug 4 — delete and regenerate or replace manually |
 | `data/.../audio/rec1590496296.mp3` | bug 5 — replace source recording |
 | `Makefile` (audio target `--voice`) | bug 6 — switch to monolingual German voice |
 

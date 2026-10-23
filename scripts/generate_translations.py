@@ -97,16 +97,22 @@ def main():
     parser.add_argument('--source', default=None,
                         help='CSV to read English words from (default: all parsed/*/cards.csv)')
     parser.add_argument('--model',  default='qwen3.5', help='Ollama model to use')
-    parser.add_argument('--output', default='data/translations.csv',
-                        help='Output join table (default: data/translations.csv)')
+    parser.add_argument('--output', default=None,
+                        help='Output join table (default: enriched/translations/<source>.csv)')
     parser.add_argument('--source-deck', default=None,
                         help='Only translate cards from this source_deck (requires master.csv as source)')
     parser.add_argument('--force', action='store_true',
                         help='Retranslate all words, overwriting existing entries')
     args = parser.parse_args()
 
-    output_path = Path(args.output)
     sources = [Path(args.source)] if args.source else sorted(Path('parsed').glob('*/cards.csv'))
+    if args.output:
+        output_path = Path(args.output)
+    elif args.source:
+        source_name = Path(args.source).parent.name
+        output_path = Path('enriched/translations') / f'{source_name}.csv'
+    else:
+        output_path = Path('enriched/translations/ankiweb-vocab.csv')
 
     existing = {} if args.force else load_existing(output_path)
     words    = collect_words(sources, args.source_deck)
