@@ -29,27 +29,27 @@ never bleed across decks.
 ── vocab deck ──────────────────────────────────────────────────────────────────
 
 A_raw/ankiweb-vocab/apkg/ankiweb-vocab.apkg
-    └─[make parse]───────────→ B_parsed/ankiweb-vocab/cards.csv    ← curate here
-                                B_parsed/ankiweb-vocab/fixes.csv    ← blacklist/replace rules
-                                A_raw/ankiweb-vocab/audio/          ← human recordings extracted
+    └─[make parse-ankiweb-vocab]────────→ B_parsed/ankiweb-vocab/cards.csv    ← curate here
+                                          B_parsed/ankiweb-vocab/fixes.csv    ← blacklist/replace rules
+                                          A_raw/ankiweb-vocab/audio/          ← human recordings extracted
 
-    [make enrich-translate]──→ C_enriched/ankiweb-vocab/translations.csv  (EN→DE)
-    [make enrich-images]─────→ C_enriched/<source>/images/<card_id>.png  (emoji PNGs)
-    [make enrich-tts]────────→ C_enriched/ankiweb-vocab/tts/audio/ + registry.csv  (German TTS)
+    [make enrich-translate-ankiweb-vocab]→ C_enriched/ankiweb-vocab/translations.csv  (EN→DE)
+    [make enrich-images-ankiweb-vocab]──→ C_enriched/ankiweb-vocab/images/<card_id>.png
+    [make enrich-tts-ankiweb-vocab]─────→ C_enriched/ankiweb-vocab/tts/audio/ + registry.csv
 
-    └─[make deck]────────────→ D_output/Deutsch Sinhala.txt
+    └─[make deck-ankiweb-vocab]─────────→ D_output/Deutsch Sinhala.txt
 
 
 ── phrases deck ────────────────────────────────────────────────────────────────
 
 A_raw/omniglot-phrases/html/omniglot-phrases.html  (parsed once by scripts/parse_omniglot.py)
-    └──────────────────────→ B_parsed/omniglot-phrases/cards.csv  ← curate here
-                              B_parsed/omniglot-phrases/fixes.csv  ← blacklist/replace rules
+    └─[make parse-omniglot-phrases]─────→ B_parsed/omniglot-phrases/cards.csv  ← curate here
+                                          B_parsed/omniglot-phrases/fixes.csv  ← blacklist/replace rules
 
-    [make enrich-translate]──→ C_enriched/omniglot-phrases/translations.csv  (EN→DE)
-    [make enrich-tts]────────→ C_enriched/omniglot-phrases/tts/audio/ + registry.csv  (German TTS)
+    [make enrich-translate-omniglot-phrases]→ C_enriched/omniglot-phrases/translations.csv  (EN→DE)
+    [make enrich-tts-omniglot-phrases]──→ C_enriched/omniglot-phrases/tts/audio/ + registry.csv
 
-    └─[make deck]────────────→ D_output/Omniglot Phrasen.txt
+    └─[make deck-omniglot-phrases]──────→ D_output/Omniglot Phrasen.txt
 
 
 ── notes ───────────────────────────────────────────────────────────────────────
@@ -57,9 +57,8 @@ A_raw/omniglot-phrases/html/omniglot-phrases.html  (parsed once by scripts/parse
 B_parsed/<deck>/cards.csv is the canonical source for each deck — hand-edit it directly
 to fix Sinhala/English text, or add rules to fixes.csv to blacklist/replace cards.
 
-All enrich-* targets loop over every deck in B_parsed/ by default.
-Use DECK= to limit to one: make enrich-translate DECK=ankiweb-vocab
-make deck — builds all output files in one shot
+Every step has a per-deck target (make enrich-translate-ankiweb-vocab) and an aggregate
+that runs all decks (make enrich-translate). make deck runs all output decks.
 ```
 
 ## TTS audio
@@ -229,8 +228,8 @@ Generation uses Ollama (`qwen3.5`, `--think false`) to pick an emoji per English
 downloads the corresponding Twemoji PNG. Runs in ~2 minutes for ~180 words.
 
 ```bash
-make enrich-images             # all decks; safe to rerun; requires ollama serve
-make enrich-images DECK=ankiweb-vocab   # single deck
+make enrich-images                       # all decks; safe to rerun; requires ollama serve
+make enrich-images-ankiweb-vocab         # single deck
 ```
 
 Notes:
@@ -247,7 +246,7 @@ source deck, separate from card data so translations can be curated independentl
 
 ```bash
 make enrich-translate                        # all decks; safe to rerun; requires ollama serve
-make enrich-translate DECK=ankiweb-vocab     # single deck
+make enrich-translate-ankiweb-vocab          # single deck
 python scripts/generate_translations.py --force   # retranslate everything
 ```
 
@@ -306,15 +305,15 @@ Sinhala-Flashcards/
 - 108-card vocab deck with human audio: exported, reviewed, built, deployed
 - 73-card Omniglot phrases deck: parsed from HTML, reviewed, built, deployed
 - 8 everflip decks: exported and reviewed (all approved), excluded from build until TTS audio is added
-- `make enrich-images` working: emoji PNGs generated via Ollama + jdecked/twemoji CDN, keyed by card ID
-- `make enrich-translate` working: per-deck EN→DE translations (no cross-deck bleed); accepts `DECK=`
-- `make enrich-tts` generates German TTS (`de-DE-SeraphinaMultilingualNeural`); accepts `DECK=`
-- `make enhance` improves audio quality (highpass + afftdn noise reduction + loudnorm); accepts `DECK=`
-- `make enrich-romanize` generates IAST transliteration for all Sinhala text; displayed as Text 3 on cards
+- `make enrich-images` / `make enrich-images-<deck>` working: emoji PNGs via Ollama + Twemoji, keyed by card ID
+- `make enrich-translate` / `make enrich-translate-<deck>` working: per-deck EN→DE translations (no cross-deck bleed)
+- `make enrich-tts` / `make enrich-tts-<deck>` generates German TTS (`de-DE-SeraphinaMultilingualNeural`)
+- `make enhance` / `make enhance-<deck>` improves audio quality (highpass + afftdn noise reduction + loudnorm)
+- `make enrich-romanize` / `make enrich-romanize-<deck>` generates IAST transliteration; displayed as Text 3
 - Multi-device Dropbox sync: switched to Full Dropbox access; all devices share `Flashcards Deluxe/`
 
 **Next:**
-1. Uncomment Sinhala TTS in `make audio` and include everflip cards in the build
+1. Uncomment Sinhala TTS in `make enrich-tts` and include everflip cards in the build
 2. Search GitHub / Kaggle for additional Sinhala data
 
 ### ✓ Done: Pseudo-phonetics (romanized Sinhala)

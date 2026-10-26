@@ -6,125 +6,121 @@
 #   C_enriched/ LLM-generated enrichments (translations, TTS, images, romanization)
 #   D_output/   final Flashcard Deluxe decks
 #
-# Usage:
-#   make parse               A → B: parse .apkg → B_parsed/<deck>/cards.csv
-#   make enhance             A → B: enhance Sinhala audio quality
-#   make enrich-romanize     B → C: generate romanization
-#   make enrich-translate    B → C: EN→DE translations    (requires ollama)
-#   make enrich-images       B → C: emoji images          (requires ollama)
-#   make enrich-tts          B → C: German TTS audio      (requires internet)
-#   make deck                C → D: build Flashcard Deluxe output files
-#   make deploy              D → Dropbox
+# Per-deck targets:
+#   make parse-<deck>             A → B: parse source into B_parsed/<deck>/cards.csv
+#   make enhance-<deck>           A → B: enhance Sinhala audio quality
+#   make enrich-romanize-<deck>   B → C: generate romanization
+#   make enrich-translate-<deck>  B → C: EN→DE translations    (requires ollama)
+#   make enrich-images-<deck>     B → C: emoji images          (requires ollama)
+#   make enrich-tts-<deck>        B → C: German TTS audio      (requires internet)
+#   make deck-<deck>              C → D: build Flashcard Deluxe output file
+#   make deploy-<deck>            D → Dropbox
 #
-# All enrich-* and enhance accept DECK= to target a single source:
-#   make enrich-translate DECK=ankiweb-vocab
-#   make enrich-tts DECK=omniglot-phrases
+# Aggregate targets run all decks:
+#   make parse / enhance / enrich-romanize / enrich-translate / enrich-images / enrich-tts / deck / deploy
 
-PYTHON  := python3
-SOURCES := $(patsubst A_raw/%/apkg/%.apkg, %, $(wildcard A_raw/*/apkg/*.apkg))
-REMOTE  := Dropbox:Flashcards Deluxe
+PYTHON     := python3
+APKG_DECKS := $(patsubst A_raw/%/apkg/%.apkg, %, $(wildcard A_raw/*/apkg/*.apkg))
+ALL_DECKS  := $(patsubst B_parsed/%/cards.csv, %, $(wildcard B_parsed/*/cards.csv))
+DECK_DEPS  := scripts/build_deck.py
+REMOTE     := Dropbox:Flashcards Deluxe
 
-DECK ?=
-_ALL_DECKS := $(patsubst B_parsed/%/cards.csv, %, $(wildcard B_parsed/*/cards.csv))
-_DECKS     := $(if $(DECK), $(DECK), $(_ALL_DECKS))
-
-.PHONY: all parse enhance enrich-romanize enrich-translate enrich-images enrich-tts deck deploy clean-generated help
+.PHONY: all parse enhance enrich-romanize enrich-translate enrich-images enrich-tts \
+        deck deploy clean-generated help \
+        deck-ankiweb-vocab deck-omniglot-phrases \
+        deploy-ankiweb-vocab deploy-omniglot-phrases \
+        parse-omniglot-phrases parse-ilovelanguages
 
 all: deck
 
 # ── A → B ──────────────────────────────────────────────────────────────────
 
-# Parse .apkg sources → B_parsed/<deck>/cards.csv + audio/
-# Reruns only when the .apkg or the script changes. Append-only.
-parse: $(patsubst %, B_parsed/%/cards.csv, $(SOURCES))
+parse: $(patsubst %, parse-%, $(APKG_DECKS)) parse-omniglot-phrases parse-ilovelanguages
 
-B_parsed/%/cards.csv: A_raw/%/apkg/%.apkg scripts/ingest.py
-	@echo "Ingesting $<..."
-	$(PYTHON) scripts/ingest.py $< B_parsed/$* --audio-out A_raw/$*/audio
+# HTML-sourced decks — explicit rules, not in APKG_DECKS
+parse-omniglot-phrases:
+	$(PYTHON) scripts/parse_omniglot.py
 
-# Enhance raw Sinhala audio (highpass + afftdn noise reduction + loudnorm)
-# Output: B_parsed/*/audio_enhanced/ — originals in A_raw/*/audio/ untouched
-enhance:
-	@for deck in $(_DECKS); do \
-		[ -d A_raw/$$deck/audio ] || continue; \
+parse-ilovelanguages:
+	$(PYTHON) scripts/parse_ilovelanguages.py
+
+# .apkg-sourced decks
+parse-%:
+	@echo "Parsing $*..."
+	$(PYTHON) scripts/ingest.py A_raw/$*/apkg/$*.apkg B_parsed/$* --audio-out A_raw/$*/audio
+
+enhance: $(patsubst %, enhance-%, $(ALL_DECKS))
+
+enhance-%:
+	@if [ -d A_raw/$*/audio ]; then \
 		$(PYTHON) scripts/enhance_audio.py \
-			--src A_raw/$$deck/audio \
-			--dst B_parsed/$$deck/audio_enhanced; \
-	done
+			--src A_raw/$*/audio \
+			--dst B_parsed/$*/audio_enhanced; \
+	else \
+		echo "enhance-$*: no audio dir, skipping."; \
+	fi
 
 # ── B → C ──────────────────────────────────────────────────────────────────
 
-# Generate romanization for all cards
-enrich-romanize:
-	@for deck in $(_DECKS); do \
-		$(PYTHON) scripts/generate_romanization.py --source B_parsed/$$deck/cards.csv; \
-	done
+enrich-romanize: $(patsubst %, enrich-romanize-%, $(ALL_DECKS))
 
-# Generate EN→DE translations (requires ollama)
-# Each deck keeps its own translations file — never bleed across decks
-enrich-translate:
-	@for deck in $(_DECKS); do \
-		$(PYTHON) scripts/generate_translations.py --source B_parsed/$$deck/cards.csv; \
-	done
+enrich-romanize-%:
+	$(PYTHON) scripts/generate_romanization.py --source B_parsed/$*/cards.csv
 
-# Generate emoji images keyed by card ID (requires ollama)
-enrich-images:
-	@for deck in $(_DECKS); do \
-		$(PYTHON) scripts/generate_images.py --source B_parsed/$$deck/cards.csv; \
-	done
+enrich-translate: $(patsubst %, enrich-translate-%, $(ALL_DECKS))
 
-# Generate German TTS audio for side 1 (requires internet)
-enrich-tts:
-	@for deck in $(_DECKS); do \
-		$(PYTHON) scripts/generate_audio.py --engine edge-tts --voice de-DE-KatjaNeural \
-			--text-column german --lang de \
-			--source B_parsed/$$deck/cards.csv; \
-	done
+enrich-translate-%:
+	$(PYTHON) scripts/generate_translations.py --source B_parsed/$*/cards.csv
+
+enrich-images: $(patsubst %, enrich-images-%, $(ALL_DECKS))
+
+enrich-images-%:
+	$(PYTHON) scripts/generate_images.py --source B_parsed/$*/cards.csv
+
+enrich-tts: $(patsubst %, enrich-tts-%, $(ALL_DECKS))
+
+enrich-tts-%:
+	$(PYTHON) scripts/generate_audio.py --engine edge-tts --voice de-DE-KatjaNeural \
+		--text-column german --lang de \
+		--source B_parsed/$*/cards.csv
 
 # ── C → D ──────────────────────────────────────────────────────────────────
 
-DECK_DEPS := scripts/build_deck.py
+deck: deck-ankiweb-vocab deck-omniglot-phrases
 
-D_output/Deutsch\ Sinhala.txt: B_parsed/ankiweb-vocab/cards.csv C_enriched/ankiweb-vocab/translations.csv $(DECK_DEPS)
+deck-ankiweb-vocab: $(DECK_DEPS)
 	$(PYTHON) scripts/build_deck.py \
 		--source B_parsed/ankiweb-vocab/cards.csv \
 		--side1 german --side3 romanized \
 		--out "D_output/Deutsch Sinhala.txt"
 
-D_output/Omniglot\ Phrasen.txt: B_parsed/omniglot-phrases/cards.csv C_enriched/omniglot-phrases/translations.csv $(DECK_DEPS)
+deck-omniglot-phrases: $(DECK_DEPS)
 	$(PYTHON) scripts/build_deck.py \
 		--source B_parsed/omniglot-phrases/cards.csv \
 		--side1 german --side3 romanized \
 		--out "D_output/Omniglot Phrasen.txt"
 
-deck: D_output/Deutsch\ Sinhala.txt D_output/Omniglot\ Phrasen.txt
-
 # ── Deploy ─────────────────────────────────────────────────────────────────
 
-deploy:
+deploy: deploy-ankiweb-vocab deploy-omniglot-phrases
+
+deploy-ankiweb-vocab:
 	rclone copyto "D_output/Deutsch Sinhala.txt" "$(REMOTE)/Deutsch Sinhala.txt" --ignore-times --progress
 	rclone sync "D_output/Deutsch Sinhala Media/" "$(REMOTE)/Deutsch Sinhala Media/" --progress
+
+deploy-omniglot-phrases:
 	rclone copyto "D_output/Omniglot Phrasen.txt" "$(REMOTE)/Omniglot Phrasen.txt" --ignore-times --progress
 	rclone sync "D_output/Omniglot Phrasen Media/" "$(REMOTE)/Omniglot Phrasen Media/" --progress
 
 # ── Utilities ──────────────────────────────────────────────────────────────
 
-# Remove only generated output — never parsed cards or raw sources
 clean-generated:
 	rm -rf D_output/
 	@echo "Removed D_output/. Parsed cards and raw sources untouched."
 
 help:
-	@echo "Pipeline:"
-	@echo "  A -> B:  parse               parse .apkg -> B_parsed/<deck>/cards.csv"
-	@echo "           enhance             enhance Sinhala audio quality"
-	@echo "  B -> C:  enrich-romanize     generate romanization"
-	@echo "           enrich-translate    EN->DE translations  (requires ollama)"
-	@echo "           enrich-images       emoji images        (requires ollama)"
-	@echo "           enrich-tts          German TTS audio    (requires internet)"
-	@echo "  C -> D:  deck                build Flashcard Deluxe output files"
-	@echo "           deploy              upload to Dropbox"
+	@echo "Per-deck:  make <step>-<deck>"
+	@echo "  Steps:   parse  enhance  enrich-romanize  enrich-translate  enrich-images  enrich-tts  deck  deploy"
+	@echo "  Decks:   $(ALL_DECKS)"
 	@echo ""
-	@echo "Options:"
-	@echo "  DECK=<name>  limit enrich-* and enhance to one deck"
-	@echo "               e.g. make enrich-translate DECK=ankiweb-vocab"
+	@echo "Aggregate: make parse / enhance / enrich-romanize / enrich-translate / enrich-images / enrich-tts / deck / deploy"
