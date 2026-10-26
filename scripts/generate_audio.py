@@ -194,7 +194,7 @@ def main():
             writer.writeheader()
 
         for card in to_generate:
-            filename = f"{sanitize(card['english'] or card['text'])}_{args.lang}.{ext}"
+            filename = f"{card['id']}_{args.lang}.{ext}"
             out_file = audio_dir / filename
             print(f"  {card['text']!r}", end=' → ', flush=True)
 

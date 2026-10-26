@@ -87,11 +87,9 @@ def main():
     parser.add_argument('--category', default='category',   help='CSV column for category (default: category)')
     parser.add_argument('--out',      default=None,         help='Output file (default: D_output/<source_dir>.txt)')
     parser.add_argument('--images',       default=None,
-                        help='Directory of pre-generated emoji PNGs (default: enriched/<source>/images/)')
+                        help='Directory of pre-generated emoji PNGs (default: C_enriched/<source>/images/)')
     parser.add_argument('--source-deck',  default=None,
                         help='Only include cards where source_deck matches this value')
-    parser.add_argument('--image-key',    default=None,
-                        help='CSV column to use for image lookup (default: same as --side1)')
     parser.add_argument('--translations', default=None,
                         help='EN→DE join table CSV (default: enriched/<source>/translations.csv, skipped if missing)')
     parser.add_argument('--tts-audio',   default=None,
@@ -130,6 +128,7 @@ def main():
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     rows = []
+    enriched_rows = []
     has_audio    = False
     has_audio_de = False
     has_category = False
@@ -172,9 +171,8 @@ def main():
                 print(f'  SKIP (empty side): {row}')
                 continue
 
-            # Look for a pre-generated image keyed by the image-key column (default: side1)
-            img_key  = row.get(args.image_key or args.side1, s1).strip()
-            img_file = images_dir / f'{sanitize(img_key)}.png'
+            # Look for a pre-generated image keyed by card ID
+            img_file = images_dir / f'{card_id}.png'
             img = img_file.name if img_file.exists() else ''
 
             # German audio (side 1) from TTS join table
@@ -184,6 +182,17 @@ def main():
 
             rows.append({'s1': s1, 's2': s2, 's3': s3, 'audio': audio, 'audio_de': audio_de,
                          'category': cat, 'image': img})
+            enriched_rows.append({
+                'id':          card_id,
+                'source_deck': row.get('source_deck', ''),
+                'sinhala':     row.get('sinhala', ''),
+                'english':     row.get('english', ''),
+                'romanized':   row.get('romanized', ''),
+                'audio_si':    audio,
+                'german':      row.get('german', ''),
+                'audio_de':    audio_de,
+                'image':       img,
+            })
             if audio:    has_audio    = True
             if audio_de: has_audio_de = True
             if cat:      has_category = True
@@ -265,6 +274,17 @@ def main():
             shutil.copy2(src, media_dst / row['image'])
             copied += 1
         print(f'  images: {copied} files → {media_dst}/')
+
+    # Write enriched snapshot — one merged CSV per source showing the deck at this stage
+    enriched_csv = enriched / 'cards.csv'
+    enriched_csv.parent.mkdir(parents=True, exist_ok=True)
+    _ENRICHED_FIELDS = ['id', 'source_deck', 'sinhala', 'english', 'romanized',
+                        'audio_si', 'german', 'audio_de', 'image']
+    with open(enriched_csv, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=_ENRICHED_FIELDS)
+        writer.writeheader()
+        writer.writerows(enriched_rows)
+    print(f'  enriched snapshot → {enriched_csv}')
 
 
 if __name__ == '__main__':

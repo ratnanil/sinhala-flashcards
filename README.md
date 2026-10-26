@@ -33,21 +33,21 @@ A_raw/ankiweb-vocab/apkg/ankiweb-vocab.apkg
                                 B_parsed/ankiweb-vocab/fixes.csv    ← blacklist/replace rules
                                 A_raw/ankiweb-vocab/audio/          ← human recordings extracted
 
-    [make translate]─────────→ C_enriched/ankiweb-vocab/translations.csv  (EN→DE)
-    [make images]────────────→ C_enriched/<source>/images/<word>.png               (emoji PNGs)
-    [make audio]─────────────→ C_enriched/ankiweb-vocab/tts/audio/ + C_enriched/ankiweb-vocab/tts/registry.csv  (German TTS)
+    [make enrich-translate]──→ C_enriched/ankiweb-vocab/translations.csv  (EN→DE)
+    [make enrich-images]─────→ C_enriched/<source>/images/<card_id>.png  (emoji PNGs)
+    [make enrich-tts]────────→ C_enriched/ankiweb-vocab/tts/audio/ + registry.csv  (German TTS)
 
     └─[make deck]────────────→ D_output/Deutsch Sinhala.txt
 
 
 ── phrases deck ────────────────────────────────────────────────────────────────
 
-data/omniglot-phrases/cards.csv  (generated once by scripts/parse_omniglot.py)
-    └─[make ingest]──────────→ B_parsed/omniglot-phrases/cards.csv  ← curate here
-                                B_parsed/omniglot-phrases/fixes.csv  ← blacklist/replace rules
+A_raw/omniglot-phrases/html/omniglot-phrases.html  (parsed once by scripts/parse_omniglot.py)
+    └──────────────────────→ B_parsed/omniglot-phrases/cards.csv  ← curate here
+                              B_parsed/omniglot-phrases/fixes.csv  ← blacklist/replace rules
 
-    [make translate-phrases]─→ C_enriched/omniglot-phrases/translations.csv  (EN→DE)
-    [make audio-phrases]─────→ C_enriched/omniglot-phrases/tts/audio/ + C_enriched/omniglot-phrases/tts/registry.csv  (German TTS)
+    [make enrich-translate]──→ C_enriched/omniglot-phrases/translations.csv  (EN→DE)
+    [make enrich-tts]────────→ C_enriched/omniglot-phrases/tts/audio/ + registry.csv  (German TTS)
 
     └─[make deck]────────────→ D_output/Omniglot Phrasen.txt
 
@@ -57,8 +57,9 @@ data/omniglot-phrases/cards.csv  (generated once by scripts/parse_omniglot.py)
 B_parsed/<deck>/cards.csv is the canonical source for each deck — hand-edit it directly
 to fix Sinhala/English text, or add rules to fixes.csv to blacklist/replace cards.
 
-make images  — runs for all decks; emoji PNGs keyed by English word
-make deck    — builds all output files in one shot
+All enrich-* targets loop over every deck in B_parsed/ by default.
+Use DECK= to limit to one: make enrich-translate DECK=ankiweb-vocab
+make deck — builds all output files in one shot
 ```
 
 ## TTS audio
@@ -72,7 +73,7 @@ Generated audio is stored in `C_enriched/<source>/tts/audio/` and registered in 
 ### German (side 1) — active
 
 Voice: `de-DE-SeraphinaMultilingualNeural` (female, chosen after comparing all 6 de-DE voices).
-Generated for all cards. Enabled in `make audio`.
+Generated for all cards. Enabled in `make enrich-tts`.
 
 ### Sinhala (side 2) — deferred
 
@@ -228,12 +229,13 @@ Generation uses Ollama (`qwen3.5`, `--think false`) to pick an emoji per English
 downloads the corresponding Twemoji PNG. Runs in ~2 minutes for ~180 words.
 
 ```bash
-make images   # generates missing images only, safe to rerun; requires ollama serve
+make enrich-images             # all decks; safe to rerun; requires ollama serve
+make enrich-images DECK=ankiweb-vocab   # single deck
 ```
 
 Notes:
 - Numbers 1–9 map to keycap emoji (1️⃣–9️⃣); larger numbers are skipped (no suitable emoji)
-- `build_deck.py --image-key english` is needed when side 1 is not English (e.g. German deck)
+- Images are looked up by card ID (`{card_id}.png`), independent of which side is displayed
 
 ## Translation (EN → DE)
 
@@ -244,7 +246,8 @@ source deck, separate from card data so translations can be curated independentl
 `german` column for any card where it is empty.
 
 ```bash
-make translate          # translates missing words only, safe to rerun; requires ollama serve
+make enrich-translate                        # all decks; safe to rerun; requires ollama serve
+make enrich-translate DECK=ankiweb-vocab     # single deck
 python scripts/generate_translations.py --force   # retranslate everything
 ```
 
@@ -277,12 +280,12 @@ Sinhala-Flashcards/
 └── scripts/
     ├── export_apkg.py          extract .apkg → CSV + audio
     ├── ingest.py               extract .apkg → B_parsed/<source>/cards.csv (append-only)
-    ├── generate_images.py      generate emoji PNGs via Ollama + Twemoji (make images)
-    ├── generate_translations.py  EN→DE translations via Ollama (make translate)
+    ├── generate_images.py      generate emoji PNGs via Ollama + Twemoji (make enrich-images)
+    ├── generate_translations.py  EN→DE translations via Ollama (make enrich-translate)
     ├── build_deck.py           assemble final Flashcard Deluxe .txt + Media/
-    ├── generate_audio.py       TTS for cards without recordings (make audio)
+    ├── generate_audio.py       TTS for cards without recordings (make enrich-tts)
     ├── enhance_audio.py        ffmpeg audio quality enhancement (make enhance)
-    └── generate_romanization.py  IAST transliteration of Sinhala script (make romanize)
+    └── generate_romanization.py  IAST transliteration of Sinhala script (make enrich-romanize)
 ```
 
 ### `build_deck.py` key flags
@@ -292,7 +295,7 @@ Sinhala-Flashcards/
 | `--source` | *(required)* | Input CSV, e.g. `B_parsed/ankiweb-vocab/cards.csv` |
 | `--side1` | `english` | Column for side 1 text |
 | `--side2` | `sinhala` | Column for side 2 text |
-| `--image-key` | same as `--side1` | Column used to look up emoji PNG; set to `english` when side 1 is German |
+| *(images)* | by card ID | Images looked up as `C_enriched/<source>/images/{card_id}.png` |
 | `--source-deck` | *(all)* | Filter to one source deck, e.g. `ankiweb-vocab` |
 | `--translations` | `C_enriched/<source>/translations.csv` | EN→DE join table; auto-detected per source, skipped if missing |
 
@@ -303,11 +306,11 @@ Sinhala-Flashcards/
 - 108-card vocab deck with human audio: exported, reviewed, built, deployed
 - 73-card Omniglot phrases deck: parsed from HTML, reviewed, built, deployed
 - 8 everflip decks: exported and reviewed (all approved), excluded from build until TTS audio is added
-- `make images` working: ~180 emoji PNGs generated via Ollama + jdecked/twemoji CDN
-- `make translate` / `make translate-phrases` working: per-deck EN→DE translations (no cross-deck bleed)
-- `make audio` / `make audio-phrases` generates German TTS (`de-DE-SeraphinaMultilingualNeural`)
-- `make enhance` improves audio quality (highpass + afftdn noise reduction + loudnorm); both decks
-- `make romanize` generates IAST transliteration for all Sinhala text; displayed as Text 3 on cards
+- `make enrich-images` working: emoji PNGs generated via Ollama + jdecked/twemoji CDN, keyed by card ID
+- `make enrich-translate` working: per-deck EN→DE translations (no cross-deck bleed); accepts `DECK=`
+- `make enrich-tts` generates German TTS (`de-DE-SeraphinaMultilingualNeural`); accepts `DECK=`
+- `make enhance` improves audio quality (highpass + afftdn noise reduction + loudnorm); accepts `DECK=`
+- `make enrich-romanize` generates IAST transliteration for all Sinhala text; displayed as Text 3 on cards
 - Multi-device Dropbox sync: switched to Full Dropbox access; all devices share `Flashcards Deluxe/`
 
 **Next:**
@@ -327,7 +330,7 @@ replace inherent vowel.
 Output uses IAST diacritics (ā, ī, ū, ṭ, ś, etc.) — accurate for linguists and precise enough
 for learners. Wired into both decks as `Text 3` via `--side3 romanized` flag on `build_deck.py`.
 
-Rerun with: `make romanize` (skips existing values; use `--force` to overwrite all).
+Rerun with: `make enrich-romanize` (skips existing values; use `--force` to overwrite all).
 
 **Optional follow-up:** add a reading guide card (or card back annotation) explaining the IAST
 symbols to German speakers — e.g. "ā = langes a wie in 'Vater'", "ś = sch".
@@ -360,5 +363,4 @@ Source: `A_raw/omniglot-phrases/html/omniglot-phrases.html` — the Omniglot "Us
 **Source URL:** https://www.omniglot.com/language/phrases/sinhala.htm (saved manually).
 
 Parsed via `scripts/parse_omniglot.py` (one-off, not in the automated pipeline) into
-`data/omniglot-phrases/cards.csv`. Wired into the pipeline as the `omniglot-phrases` deck:
 `B_parsed/omniglot-phrases/cards.csv` → `D_output/Omniglot Phrasen.txt` + Media/.

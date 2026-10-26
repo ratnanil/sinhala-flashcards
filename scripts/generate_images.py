@@ -103,7 +103,7 @@ def download_png(url: str, dest: Path) -> bool:
 def main():
     parser = argparse.ArgumentParser(description='Generate emoji images for vocabulary words')
     parser.add_argument('--source', default=None,
-                        help='cards.csv to read words from (default: all data/*/cards.csv)')
+                        help='cards.csv to read words from (default: all B_parsed/*/cards.csv)')
     parser.add_argument('--model',  default='qwen3.5', help='Ollama model to use')
     parser.add_argument('--images', default=None, help='Output image directory (default: C_enriched/<source>/images/)')
     args = parser.parse_args()
@@ -118,33 +118,40 @@ def main():
         print('ERROR: --images required when no --source given (no single source to default to)')
         sys.exit(1)
     images_dir.mkdir(parents=True, exist_ok=True)
-    words = {}  # sanitized_name → original word
+    cards = {}  # card_id → english word
     for src in sources:
         with open(src, newline='', encoding='utf-8') as f:
             for row in csv.DictReader(f):
+                cid  = row.get('id', '').strip()
                 word = row.get('english', '').strip()
-                if word:
-                    words[sanitize(word)] = word
+                if cid and word:
+                    cards[cid] = word
 
     # Filter to only missing images
-    missing = {k: v for k, v in words.items() if not (images_dir / f'{k}.png').exists()}
+    missing = {cid: word for cid, word in cards.items() if not (images_dir / f'{cid}.png').exists()}
 
     if not missing:
-        print(f'All {len(words)} images already exist. Nothing to do.')
+        print(f'All {len(cards)} images already exist. Nothing to do.')
         return
 
-    print(f'{len(words)} words total, {len(missing)} images missing.')
+    print(f'{len(cards)} cards total, {len(missing)} images missing.')
 
     if not check_ollama():
         print('ERROR: Ollama is not running. Start it with: ollama serve')
         sys.exit(1)
 
+    emoji_cache: dict[str, str] = {}  # english → emoji (avoids double-querying same word)
     ok = skipped = failed = 0
-    for stem, word in sorted(missing.items()):
-        dest = images_dir / f'{stem}.png'
+    for cid, word in sorted(missing.items(), key=lambda x: x[1]):
+        dest = images_dir / f'{cid}.png'
         print(f'  {word!r}', end=' → ', flush=True)
 
-        emoji = ask_ollama(word, args.model)
+        if word in emoji_cache:
+            emoji = emoji_cache[word]
+        else:
+            emoji = ask_ollama(word, args.model)
+            if emoji:
+                emoji_cache[word] = emoji
         if not emoji:
             print('no emoji returned, skipping')
             skipped += 1
