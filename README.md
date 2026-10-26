@@ -29,7 +29,7 @@ never bleed across decks.
 ── vocab deck ──────────────────────────────────────────────────────────────────
 
 A_raw/ankiweb-vocab/apkg/ankiweb-vocab.apkg
-    └─[make ingest]──────────→ B_parsed/ankiweb-vocab/cards.csv    ← curate here
+    └─[make parse]───────────→ B_parsed/ankiweb-vocab/cards.csv    ← curate here
                                 B_parsed/ankiweb-vocab/fixes.csv    ← blacklist/replace rules
                                 A_raw/ankiweb-vocab/audio/          ← human recordings extracted
 

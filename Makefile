@@ -7,7 +7,7 @@
 #   D_output/   final Flashcard Deluxe decks
 #
 # Usage:
-#   make ingest              A → B: parse .apkg → B_parsed/<deck>/cards.csv
+#   make parse               A → B: parse .apkg → B_parsed/<deck>/cards.csv
 #   make enhance             A → B: enhance Sinhala audio quality
 #   make enrich-romanize     B → C: generate romanization
 #   make enrich-translate    B → C: EN→DE translations    (requires ollama)
@@ -28,7 +28,7 @@ DECK ?=
 _ALL_DECKS := $(patsubst B_parsed/%/cards.csv, %, $(wildcard B_parsed/*/cards.csv))
 _DECKS     := $(if $(DECK), $(DECK), $(_ALL_DECKS))
 
-.PHONY: all ingest enhance enrich-romanize enrich-translate enrich-images enrich-tts deck deploy clean-generated help
+.PHONY: all parse enhance enrich-romanize enrich-translate enrich-images enrich-tts deck deploy clean-generated help
 
 all: deck
 
@@ -36,7 +36,7 @@ all: deck
 
 # Parse .apkg sources → B_parsed/<deck>/cards.csv + audio/
 # Reruns only when the .apkg or the script changes. Append-only.
-ingest: $(patsubst %, B_parsed/%/cards.csv, $(SOURCES))
+parse: $(patsubst %, B_parsed/%/cards.csv, $(SOURCES))
 
 B_parsed/%/cards.csv: A_raw/%/apkg/%.apkg scripts/ingest.py
 	@echo "Ingesting $<..."
@@ -116,7 +116,7 @@ clean-generated:
 
 help:
 	@echo "Pipeline:"
-	@echo "  A -> B:  ingest              parse .apkg -> B_parsed/<deck>/cards.csv"
+	@echo "  A -> B:  parse               parse .apkg -> B_parsed/<deck>/cards.csv"
 	@echo "           enhance             enhance Sinhala audio quality"
 	@echo "  B -> C:  enrich-romanize     generate romanization"
 	@echo "           enrich-translate    EN->DE translations  (requires ollama)"
