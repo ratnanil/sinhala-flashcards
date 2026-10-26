@@ -3,7 +3,7 @@
 Generate TTS audio for flashcard vocabulary using edge-tts or Piper.
 
 Reads a parsed cards.csv and generates audio for cards that have no recording yet.
-Audio files are written to enriched/tts/audio/ and registered in enriched/tts/registry.csv
+Audio files are written to C_enriched/tts/audio/ and registered in C_enriched/tts/registry.csv
 (a join table keyed by card ID + lang), so reruns never overwrite existing entries.
 
 build_deck.py loads tts_audio.csv and uses it to fill in missing audio.
@@ -132,18 +132,18 @@ def main():
                         help='edge-tts voice (default: si-LK-SameeraNeural)')
     parser.add_argument('--model',       default=None,
                         help='Piper .onnx model path (required when --engine piper)')
-    parser.add_argument('--source',      default='parsed/ankiweb-vocab/cards.csv',
-                        help='Cards CSV to read from (default: parsed/ankiweb-vocab/cards.csv)')
+    parser.add_argument('--source',      default='B_parsed/ankiweb-vocab/cards.csv',
+                        help='Cards CSV to read from (default: B_parsed/ankiweb-vocab/cards.csv)')
     parser.add_argument('--text-column', default='sinhala',
                         help='CSV column to synthesize (default: sinhala)')
     parser.add_argument('--lang',        default='si',
                         help='Language tag for the join table, e.g. si or de (default: si)')
     parser.add_argument('--audio-dir',   default=None,
-                        help='Directory to write audio files (default: enriched/<source>/tts/audio)')
+                        help='Directory to write audio files (default: C_enriched/<source>/tts/audio)')
     parser.add_argument('--tts-csv',     default=None,
-                        help='Join table for generated audio (default: enriched/<source>/tts/registry.csv)')
+                        help='Join table for generated audio (default: C_enriched/<source>/tts/registry.csv)')
     parser.add_argument('--translations', default=None,
-                        help='EN→DE join table to fill missing text (default: enriched/<source>/translations.csv)')
+                        help='EN→DE join table to fill missing text (default: C_enriched/<source>/translations.csv)')
     parser.add_argument('--source-deck', default=None,
                         help='Only process cards from this source deck')
     parser.add_argument('--force',       action='store_true',
@@ -158,7 +158,7 @@ def main():
         sys.exit(1)
 
     source_name = Path(args.source).parent.name
-    enriched    = Path('enriched') / source_name
+    enriched    = Path('C_enriched') / source_name
     audio_dir         = Path(args.audio_dir)   if args.audio_dir   else enriched / 'tts' / 'audio'
     tts_csv           = Path(args.tts_csv)     if args.tts_csv     else enriched / 'tts' / 'registry.csv'
     translations_path = Path(args.translations) if args.translations else enriched / 'translations.csv'

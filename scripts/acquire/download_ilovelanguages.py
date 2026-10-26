@@ -2,8 +2,8 @@
 """
 Download Sinhala audio files from the I Love Languages lesson HTML pages.
 
-Parses all Sinhala Lesson*.html files in raw/ilovelanguages/html/ and downloads
-the corresponding MP3s to raw/ilovelanguages/audio/.
+Parses all Sinhala Lesson*.html files in A_raw/ilovelanguages/html/ and downloads
+the corresponding MP3s to A_raw/ilovelanguages/audio/.
 
 HTML files were saved manually from https://ilovelanguages.org/sinhala/
 Audio served from https://ilovelanguages.org/audio/sinhala/<filename>.mp3
@@ -12,7 +12,7 @@ Idempotent — already-downloaded files are skipped.
 
 Usage:
     python scripts/acquire/download_ilovelanguages.py
-    python scripts/acquire/download_ilovelanguages.py --html-dir raw/ilovelanguages/html --audio-out raw/ilovelanguages/audio
+    python scripts/acquire/download_ilovelanguages.py --html-dir A_raw/ilovelanguages/html --audio-out A_raw/ilovelanguages/audio
 """
 
 import argparse
@@ -48,9 +48,9 @@ def collect_audio_urls(html_dir: Path) -> dict[str, str]:
 
 def main():
     parser = argparse.ArgumentParser(description='Download ilovelanguages Sinhala audio')
-    parser.add_argument('--html-dir',  default='raw/ilovelanguages/html',
+    parser.add_argument('--html-dir',  default='A_raw/ilovelanguages/html',
                         help='Directory containing lesson HTML files')
-    parser.add_argument('--audio-out', default='raw/ilovelanguages/audio',
+    parser.add_argument('--audio-out', default='A_raw/ilovelanguages/audio',
                         help='Directory to write MP3 files')
     args = parser.parse_args()
 

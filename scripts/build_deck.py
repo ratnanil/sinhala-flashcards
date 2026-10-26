@@ -14,13 +14,13 @@ Column mapping (Flashcard Deluxe names):
 
 Usage:
     # English → Sinhala with audio
-    python scripts/build_deck.py --source parsed/ankiweb-vocab/cards.csv
+    python scripts/build_deck.py --source B_parsed/ankiweb-vocab/cards.csv
 
     # German → Sinhala with audio (once german column is populated)
-    python scripts/build_deck.py --source parsed/ankiweb-vocab/cards.csv --side1 german
+    python scripts/build_deck.py --source B_parsed/ankiweb-vocab/cards.csv --side1 german
 
     # Custom output path
-    python scripts/build_deck.py --source parsed/ankiweb-vocab/cards.csv --out output/vocab.txt
+    python scripts/build_deck.py --source B_parsed/ankiweb-vocab/cards.csv --out D_output/vocab.txt
 """
 
 import argparse
@@ -85,7 +85,7 @@ def main():
     parser.add_argument('--side3',    default='',        help='CSV column for side 3, e.g. romanized (default: none)')
     parser.add_argument('--audio',    default='audio_file', help='CSV column for audio filename (default: audio_file)')
     parser.add_argument('--category', default='category',   help='CSV column for category (default: category)')
-    parser.add_argument('--out',      default=None,         help='Output file (default: output/<source_dir>.txt)')
+    parser.add_argument('--out',      default=None,         help='Output file (default: D_output/<source_dir>.txt)')
     parser.add_argument('--images',       default=None,
                         help='Directory of pre-generated emoji PNGs (default: enriched/<source>/images/)')
     parser.add_argument('--source-deck',  default=None,
@@ -100,21 +100,21 @@ def main():
 
     source      = Path(args.source)
     source_name = source.parent.name
-    enriched    = Path('enriched') / source_name
+    enriched    = Path('C_enriched') / source_name
     images_dir        = Path(args.images)      if args.images      else enriched / 'images'
     translations_path = Path(args.translations) if args.translations else enriched / 'translations.csv'
     tts_registry_path = Path(args.tts_audio)   if args.tts_audio   else enriched / 'tts' / 'registry.csv'
 
     # Build a unified audio map: filename → full path.
-    # Raw originals come from raw/*/audio/, enhanced from parsed/*/audio_enhanced/.
+    # Raw originals come from raw/*/audio/, enhanced from B_parsed/*/audio_enhanced/.
     # Enhanced is scanned second so it overwrites originals for the same filename.
     audio_map: dict[str, Path] = {}
-    for audio_dir in sorted(Path('raw').glob('*/audio')):
+    for audio_dir in sorted(Path('A_raw').glob('*/audio')):
         if audio_dir.is_dir():
             for f in audio_dir.iterdir():
                 if f.is_file():
                     audio_map[f.name] = f
-    for audio_dir in sorted(Path('parsed').glob('*/audio_enhanced')):
+    for audio_dir in sorted(Path('B_parsed').glob('*/audio_enhanced')):
         for f in audio_dir.iterdir():
             if f.is_file():
                 audio_map[f.name] = f  # overrides original
@@ -126,7 +126,7 @@ def main():
     if tts_audio_si or tts_audio_de:
         print(f'Loaded TTS audio: {len(tts_audio_si)} Sinhala, {len(tts_audio_de)} German')
     blacklist, sinhala_fixes, english_fixes = load_fixes(source)
-    out_path   = Path(args.out) if args.out else Path('output') / f'{source.parent.name}.txt'
+    out_path   = Path(args.out) if args.out else Path('D_output') / f'{source.parent.name}.txt'
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     rows = []

@@ -105,15 +105,15 @@ def main():
     parser.add_argument('--source', default=None,
                         help='cards.csv to read words from (default: all data/*/cards.csv)')
     parser.add_argument('--model',  default='qwen3.5', help='Ollama model to use')
-    parser.add_argument('--images', default=None, help='Output image directory (default: enriched/<source>/images/)')
+    parser.add_argument('--images', default=None, help='Output image directory (default: C_enriched/<source>/images/)')
     args = parser.parse_args()
 
-    sources = [Path(args.source)] if args.source else sorted(Path('parsed').glob('*/cards.csv'))
+    sources = [Path(args.source)] if args.source else sorted(Path('B_parsed').glob('*/cards.csv'))
 
     if args.images:
         images_dir = Path(args.images)
     elif args.source:
-        images_dir = Path('enriched') / Path(args.source).parent.name / 'images'
+        images_dir = Path('C_enriched') / Path(args.source).parent.name / 'images'
     else:
         print('ERROR: --images required when no --source given (no single source to default to)')
         sys.exit(1)

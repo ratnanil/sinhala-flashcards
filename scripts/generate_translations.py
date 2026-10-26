@@ -8,8 +8,8 @@ Already-translated words are skipped — safe to rerun.
 
 Usage:
     python scripts/generate_translations.py
-    python scripts/generate_translations.py --source parsed/ankiweb-vocab/cards.csv
-    python scripts/generate_translations.py --model qwen3.5 --output enriched/ankiweb-vocab/translations.csv
+    python scripts/generate_translations.py --source B_parsed/ankiweb-vocab/cards.csv
+    python scripts/generate_translations.py --model qwen3.5 --output C_enriched/ankiweb-vocab/translations.csv
 """
 
 import argparse
@@ -95,22 +95,22 @@ def collect_words(sources: list, source_deck: str | None = None) -> list:
 def main():
     parser = argparse.ArgumentParser(description='Generate EN→DE translations via Ollama')
     parser.add_argument('--source', default=None,
-                        help='CSV to read English words from (default: all parsed/*/cards.csv)')
+                        help='CSV to read English words from (default: all B_parsed/*/cards.csv)')
     parser.add_argument('--model',  default='qwen3.5', help='Ollama model to use')
     parser.add_argument('--output', default=None,
-                        help='Output join table (default: enriched/translations/<source>.csv)')
+                        help='Output join table (default: C_enriched/translations/<source>.csv)')
     parser.add_argument('--source-deck', default=None,
                         help='Only translate cards from this source_deck')
     parser.add_argument('--force', action='store_true',
                         help='Retranslate all words, overwriting existing entries')
     args = parser.parse_args()
 
-    sources = [Path(args.source)] if args.source else sorted(Path('parsed').glob('*/cards.csv'))
+    sources = [Path(args.source)] if args.source else sorted(Path('B_parsed').glob('*/cards.csv'))
     if args.output:
         output_path = Path(args.output)
     elif args.source:
         source_name = Path(args.source).parent.name
-        output_path = Path('enriched') / source_name / 'translations.csv'
+        output_path = Path('C_enriched') / source_name / 'translations.csv'
     else:
         print('ERROR: --output required when no --source given (no single source to default to)')
         import sys; sys.exit(1)

@@ -17,8 +17,8 @@ images and audio on every card.
 
 | Short name | Source | Output file |
 |------------|--------|-------------|
-| **ankiweb-vocab** | `raw/ankiweb-vocab/apkg/ankiweb-vocab.apkg` | `output/Deutsch Sinhala.txt` |
-| **omniglot-phrases** | `data/omniglot-phrases/cards.csv` (parsed from HTML, one-off) | `output/Omniglot Phrasen.txt` |
+| **ankiweb-vocab** | `A_raw/ankiweb-vocab/apkg/ankiweb-vocab.apkg` | `D_output/Deutsch Sinhala.txt` |
+| **omniglot-phrases** | `B_parsed/omniglot-phrases/cards.csv` (parsed from HTML, one-off) | `D_output/Omniglot Phrasen.txt` |
 
 The pipeline runs per-deck. Each deck has its own translations file so German translations
 never bleed across decks.
@@ -28,33 +28,33 @@ never bleed across decks.
 ```
 ── vocab deck ──────────────────────────────────────────────────────────────────
 
-raw/ankiweb-vocab/apkg/ankiweb-vocab.apkg
-    └─[make export]──────────→ data/ankiweb-vocab/cards.csv  +  raw/ankiweb-vocab/audio/
-    └─[make review]──────────→ parsed/ankiweb-vocab/cards.csv    ← curate here
-                                parsed/ankiweb-vocab/fixes.csv    ← blacklist/replace rules
+A_raw/ankiweb-vocab/apkg/ankiweb-vocab.apkg
+    └─[make ingest]──────────→ B_parsed/ankiweb-vocab/cards.csv    ← curate here
+                                B_parsed/ankiweb-vocab/fixes.csv    ← blacklist/replace rules
+                                A_raw/ankiweb-vocab/audio/          ← human recordings extracted
 
-    [make translate]─────────→ enriched/ankiweb-vocab/translations.csv  (EN→DE)
-    [make images]────────────→ enriched/<source>/images/<word>.png               (emoji PNGs)
-    [make audio]─────────────→ enriched/ankiweb-vocab/tts/audio/ + enriched/ankiweb-vocab/tts/registry.csv  (German TTS)
+    [make translate]─────────→ C_enriched/ankiweb-vocab/translations.csv  (EN→DE)
+    [make images]────────────→ C_enriched/<source>/images/<word>.png               (emoji PNGs)
+    [make audio]─────────────→ C_enriched/ankiweb-vocab/tts/audio/ + C_enriched/ankiweb-vocab/tts/registry.csv  (German TTS)
 
-    └─[make deck]────────────→ output/Deutsch Sinhala.txt
+    └─[make deck]────────────→ D_output/Deutsch Sinhala.txt
 
 
 ── phrases deck ────────────────────────────────────────────────────────────────
 
 data/omniglot-phrases/cards.csv  (generated once by scripts/parse_omniglot.py)
-    └─[make review]──────────→ parsed/omniglot-phrases/cards.csv  ← curate here
-                                parsed/omniglot-phrases/fixes.csv  ← blacklist/replace rules
+    └─[make ingest]──────────→ B_parsed/omniglot-phrases/cards.csv  ← curate here
+                                B_parsed/omniglot-phrases/fixes.csv  ← blacklist/replace rules
 
-    [make translate-phrases]─→ enriched/omniglot-phrases/translations.csv  (EN→DE)
-    [make audio-phrases]─────→ enriched/omniglot-phrases/tts/audio/ + enriched/omniglot-phrases/tts/registry.csv  (German TTS)
+    [make translate-phrases]─→ C_enriched/omniglot-phrases/translations.csv  (EN→DE)
+    [make audio-phrases]─────→ C_enriched/omniglot-phrases/tts/audio/ + C_enriched/omniglot-phrases/tts/registry.csv  (German TTS)
 
-    └─[make deck]────────────→ output/Omniglot Phrasen.txt
+    └─[make deck]────────────→ D_output/Omniglot Phrasen.txt
 
 
 ── notes ───────────────────────────────────────────────────────────────────────
 
-parsed/<deck>/cards.csv is the canonical source for each deck — hand-edit it directly
+B_parsed/<deck>/cards.csv is the canonical source for each deck — hand-edit it directly
 to fix Sinhala/English text, or add rules to fixes.csv to blacklist/replace cards.
 
 make images  — runs for all decks; emoji PNGs keyed by English word
@@ -66,7 +66,7 @@ make deck    — builds all output files in one shot
 All TTS uses edge-tts (Microsoft neural voices, online). Requires internet at generation time
 but only needs to run once. Install: `pip install edge-tts`.
 
-Generated audio is stored in `enriched/<source>/tts/audio/` and registered in `enriched/<source>/tts/registry.csv`
+Generated audio is stored in `C_enriched/<source>/tts/audio/` and registered in `C_enriched/<source>/tts/registry.csv`
 (join table keyed by card ID + lang), so reruns never overwrite existing entries.
 
 ### German (side 1) — active
@@ -159,7 +159,7 @@ target than Flashcard Deluxe.
 
 ## Data sources
 
-### Active: `raw/ankiweb-vocab/apkg/ankiweb-vocab.apkg`
+### Active: `A_raw/ankiweb-vocab/apkg/ankiweb-vocab.apkg`
 
 108 vocabulary cards, Sinhala → English, with one human MP3 recording per card.
 
@@ -169,9 +169,9 @@ Categories: fruits, clothing, days of the week, colors, time words, ~50 colloqui
 **Source:** AnkiWeb shared deck ID 505727396 — https://ankiweb.net/shared/info/505727396
 **Download:** manual (via AnkiWeb "Download" button), no username or author information available.
 
-Exported to `data/ankiweb-vocab/` via `scripts/export_apkg.py`; recordings in `raw/ankiweb-vocab/audio/`.
+Ingested via `scripts/ingest.py` → `B_parsed/ankiweb-vocab/cards.csv`; recordings in `A_raw/ankiweb-vocab/audio/`.
 
-### Active: `raw/everflip-sinhala-*/apkg/*.apkg` (8 decks)
+### Active: `A_raw/everflip-sinhala-*/apkg/*.apkg` (8 decks)
 
 ~100 cards across 8 thematic decks: colors (12), days (11), family (12), greetings (11),
 nouns (15), numbers (15), politeness (12), questions (12). No audio. Sinhala → English only.
@@ -237,10 +237,10 @@ Notes:
 
 ## Translation (EN → DE)
 
-Stored in `enriched/<source>/translations.csv` as a join table (`english,german`), one file per
+Stored in `C_enriched/<source>/translations.csv` as a join table (`english,german`), one file per
 source deck, separate from card data so translations can be curated independently.
 
-`build_deck.py` auto-loads `enriched/<source>/translations.csv` at build time and fills the
+`build_deck.py` auto-loads `C_enriched/<source>/translations.csv` at build time and fills the
 `german` column for any card where it is empty.
 
 ```bash
@@ -255,30 +255,28 @@ Model: `qwen3.5` with `--think false`. Prompt asks for the definite article for 
 
 ```
 Sinhala-Flashcards/
-├── raw/                    immutable source files, one subdirectory per source
+├── A_raw/                    immutable source files, one subdirectory per source
 │   └── <source>/
 │       ├── apkg/           source .apkg files (for Anki-derived sources)
 │       ├── audio/          human recordings (never modified)
 │       └── html/           scraped source HTML (for HTML-parsed sources)
-├── parsed/                 cleaned card data (deterministic; editable)
+├── B_parsed/                 cleaned card data (deterministic; editable)
 │   └── <deck>/
 │       ├── cards.csv           canonical card data per deck
 │       ├── fixes.csv           blacklist/replace rules (hand-edited)
 │       └── audio_enhanced/     ffmpeg-processed recordings (make enhance)
-├── enriched/               LLM/model-generated assets (expensive, non-deterministic)
-│   └── <source>/               one directory per source deck, mirrors parsed/
+├── C_enriched/               LLM/model-generated assets (expensive, non-deterministic)
+│   └── <source>/               one directory per source deck, mirrors B_parsed/
 │       ├── translations.csv    EN→DE join table (make translate / translate-phrases)
 │       ├── images/             emoji PNGs (make images)
 │       └── tts/
 │           ├── registry.csv    TTS audio join table, keyed by card ID + lang
 │           └── audio/          TTS-generated audio files (make audio)
-├── data/                   exported CSVs from raw .apkg (intermediate, make export)
-│   └── <deck>/cards.csv
-├── output/                 final Flashcard Deluxe import files + Media/ folders
+├── D_output/                 final Flashcard Deluxe import files + Media/ folders
 │   └── Deutsch Sinhala.txt
 └── scripts/
     ├── export_apkg.py          extract .apkg → CSV + audio
-    ├── prepare_review.py       populate/update parsed/ card files
+    ├── ingest.py               extract .apkg → B_parsed/<source>/cards.csv (append-only)
     ├── generate_images.py      generate emoji PNGs via Ollama + Twemoji (make images)
     ├── generate_translations.py  EN→DE translations via Ollama (make translate)
     ├── build_deck.py           assemble final Flashcard Deluxe .txt + Media/
@@ -291,12 +289,12 @@ Sinhala-Flashcards/
 
 | Flag | Default | Purpose |
 |------|---------|---------|
-| `--source` | *(required)* | Input CSV, e.g. `parsed/ankiweb-vocab/cards.csv` |
+| `--source` | *(required)* | Input CSV, e.g. `B_parsed/ankiweb-vocab/cards.csv` |
 | `--side1` | `english` | Column for side 1 text |
 | `--side2` | `sinhala` | Column for side 2 text |
 | `--image-key` | same as `--side1` | Column used to look up emoji PNG; set to `english` when side 1 is German |
 | `--source-deck` | *(all)* | Filter to one source deck, e.g. `ankiweb-vocab` |
-| `--translations` | `enriched/<source>/translations.csv` | EN→DE join table; auto-detected per source, skipped if missing |
+| `--translations` | `C_enriched/<source>/translations.csv` | EN→DE join table; auto-detected per source, skipped if missing |
 
 ## Current state & next steps
 
@@ -336,8 +334,8 @@ symbols to German speakers — e.g. "ā = langes a wie in 'Vater'", "ś = sch".
 
 ### ✓ Done: Improve vocab recording quality
 
-Originals in `raw/ankiweb-vocab/audio/` (never modified).
-Enhanced files in `parsed/ankiweb-vocab/audio_enhanced/` — picked up automatically
+Originals in `A_raw/ankiweb-vocab/audio/` (never modified).
+Enhanced files in `B_parsed/ankiweb-vocab/audio_enhanced/` — picked up automatically
 by `build_deck.py` (overrides originals for matching filenames).
 
 Filters applied: `highpass=f=80` → `afftdn=nr=20:nf=-40` → `loudnorm=I=-16`.
@@ -356,11 +354,11 @@ Mozilla Common Voice) before investing in this.
 
 ### ✓ Done: Parse Omniglot phrases HTML → CSV
 
-Source: `raw/omniglot-phrases/html/omniglot-phrases.html` — the Omniglot "Useful phrases in Sinhala" page,
-73 English→Sinhala phrases. Audio files in `raw/omniglot-phrases/audio/` (43 of 73 have audio).
+Source: `A_raw/omniglot-phrases/html/omniglot-phrases.html` — the Omniglot "Useful phrases in Sinhala" page,
+73 English→Sinhala phrases. Audio files in `A_raw/omniglot-phrases/audio/` (43 of 73 have audio).
 
 **Source URL:** https://www.omniglot.com/language/phrases/sinhala.htm (saved manually).
 
 Parsed via `scripts/parse_omniglot.py` (one-off, not in the automated pipeline) into
 `data/omniglot-phrases/cards.csv`. Wired into the pipeline as the `omniglot-phrases` deck:
-`review/omniglot-phrases.csv` → `output/Omniglot Phrasen.txt` + Media/.
+`B_parsed/omniglot-phrases/cards.csv` → `D_output/Omniglot Phrasen.txt` + Media/.

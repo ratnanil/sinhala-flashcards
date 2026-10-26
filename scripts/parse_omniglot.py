@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-One-off parser: raw/omniglot-phrases/html/omniglot-phrases.html → parsed/omniglot-phrases/cards.csv
+One-off parser: A_raw/omniglot-phrases/html/omniglot-phrases.html → B_parsed/omniglot-phrases/cards.csv
 
 The HTML table has English → Sinhala rows. Each Sinhala cell may contain
 multiple variants (separated by <br /> or newlines), each with optional
 audio link and romanization in parentheses.
 
 Append-only: existing cards (matched by stable ID) are never overwritten.
-Review parsed/omniglot-phrases/cards.csv by hand after running.
+Review B_parsed/omniglot-phrases/cards.csv by hand after running.
 """
 
 import csv
@@ -16,8 +16,8 @@ import html
 import re
 from pathlib import Path
 
-HTML_FILE  = Path("raw/omniglot-phrases/html/omniglot-phrases.html")
-OUT_CSV    = Path("parsed/omniglot-phrases/cards.csv")
+HTML_FILE  = Path("A_raw/omniglot-phrases/html/omniglot-phrases.html")
+OUT_CSV    = Path("B_parsed/omniglot-phrases/cards.csv")
 FIELDNAMES = ['id', 'source_deck', 'sinhala', 'english', 'romanized', 'audio_file']
 FIX_FIELDS = ['type', 'key', 'value', 'replacement', 'note']
 

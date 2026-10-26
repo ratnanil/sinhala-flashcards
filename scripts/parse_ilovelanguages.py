@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Parse ilovelanguages lesson HTMLs → parsed/ilovelanguages/cards.csv
+Parse ilovelanguages lesson HTMLs → B_parsed/ilovelanguages/cards.csv
 
-Reads all Sinhala Lesson*.html files from raw/ilovelanguages/html/ and
+Reads all Sinhala Lesson*.html files from A_raw/ilovelanguages/html/ and
 produces a deduplicated cards CSV.
 
-Audio files are only referenced if they exist in raw/ilovelanguages/audio/
+Audio files are only referenced if they exist in A_raw/ilovelanguages/audio/
 (103 files are genuinely absent from the server and were never downloaded).
 
 Append-only: existing cards (matched by stable ID) are never overwritten.
@@ -20,9 +20,9 @@ from pathlib import Path
 
 from bs4 import BeautifulSoup
 
-HTML_DIR   = Path('raw/ilovelanguages/html')
-AUDIO_DIR  = Path('raw/ilovelanguages/audio')
-OUT_CSV    = Path('parsed/ilovelanguages/cards.csv')
+HTML_DIR   = Path('A_raw/ilovelanguages/html')
+AUDIO_DIR  = Path('A_raw/ilovelanguages/audio')
+OUT_CSV    = Path('B_parsed/ilovelanguages/cards.csv')
 FIELDNAMES = ['id', 'source_deck', 'sinhala', 'english', 'romanized', 'audio_file']
 FIX_FIELDS = ['type', 'key', 'value', 'replacement', 'note']
 

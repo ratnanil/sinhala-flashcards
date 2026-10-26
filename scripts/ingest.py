@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """
-Ingest an Anki .apkg deck into parsed/<source>/cards.csv.
+Ingest an Anki .apkg deck into B_parsed/<source>/cards.csv.
 
 Extracts the .apkg, assigns stable card IDs, parses romanized fields out of
 the English text, and appends only new cards (existing cards are preserved).
 A fixes.csv stub is created alongside cards.csv if it does not exist yet.
 
 Usage:
-    python scripts/ingest.py raw/<source>/apkg/<source>.apkg parsed/<source>
-    python scripts/ingest.py raw/<source>/apkg/<source>.apkg parsed/<source> \
-        --audio-out raw/<source>/audio
+    python scripts/ingest.py A_raw/<source>/apkg/<source>.apkg B_parsed/<source>
+    python scripts/ingest.py A_raw/<source>/apkg/<source>.apkg B_parsed/<source> \
+        --audio-out A_raw/<source>/audio
 """
 
 import argparse
@@ -74,11 +74,11 @@ def ensure_fixes_stub(fixes_path: Path) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Ingest .apkg into parsed/<source>/cards.csv')
+    parser = argparse.ArgumentParser(description='Ingest .apkg into B_parsed/<source>/cards.csv')
     parser.add_argument('apkg',       help='Path to .apkg file')
-    parser.add_argument('output_dir', help='Output directory, e.g. parsed/<source>')
+    parser.add_argument('output_dir', help='Output directory, e.g. B_parsed/<source>')
     parser.add_argument('--audio-out', default=None,
-                        help='Directory for audio files (default: raw/<source>/audio)')
+                        help='Directory for audio files (default: A_raw/<source>/audio)')
     args = parser.parse_args()
 
     apkg_path  = Path(args.apkg)
@@ -90,7 +90,7 @@ def main():
     if args.audio_out:
         audio_out = Path(args.audio_out)
     else:
-        # Default: raw/<source>/audio (sibling of apkg/)
+        # Default: A_raw/<source>/audio (sibling of apkg/)
         audio_out = apkg_path.parent.parent / 'audio'
 
     existing = load_existing_ids(cards_path)
