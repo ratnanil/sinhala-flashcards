@@ -4,12 +4,11 @@
 # Fix bad cards by editing parsed/<deck>/fixes.csv (blacklist/replace rules).
 #
 # Per-deck workflow:
-#   vocab:   export → review → translate → audio → deck
-#   phrases: (cards.csv already generated) → review → translate-phrases → audio-phrases → deck
+#   vocab:   ingest → translate → audio → deck
+#   phrases: (parsed/cards.csv already exists) → translate-phrases → audio-phrases → deck
 #
 # Usage:
-#   make export                   run after adding a new .apkg
-#   make review                   populate/update parsed/ card files
+#   make ingest                   run after adding a new .apkg → parsed/<deck>/cards.csv
 #   make translate                EN→DE for vocab deck (requires ollama)
 #   make translate-phrases        EN→DE for phrases deck (requires ollama)
 #   make audio                    German TTS for vocab deck (requires internet)
@@ -19,29 +18,22 @@
 PYTHON      := python3
 # Each source with an .apkg sits at raw/<source>/apkg/<source>.apkg
 SOURCES      := $(patsubst raw/%/apkg/%.apkg, %, $(wildcard raw/*/apkg/*.apkg))
-DATA_CSVS    := $(patsubst %, data/%/cards.csv, $(SOURCES))
-# Manually maintained card CSVs (not generated from .apkg)
-MANUAL_CSVS  := data/omniglot-phrases/cards.csv
 PARSED_CSVS  := $(wildcard parsed/*/cards.csv)
 
 REMOTE := Dropbox:Flashcards Deluxe
 
-.PHONY: all export review audio deck deploy clean-generated romanize help
+.PHONY: all ingest audio deck deploy clean-generated romanize help
 
 all: deck
 
-# 1. Export .apkg → data/<deck>/cards.csv + audio/
+# 1. Ingest .apkg → parsed/<deck>/cards.csv + audio/
 #    Reruns only when the .apkg or the script changes.
-export: $(DATA_CSVS)
+#    Append-only: existing parsed cards are never overwritten.
+ingest: $(patsubst %, parsed/%/cards.csv, $(SOURCES))
 
-data/%/cards.csv: raw/%/apkg/%.apkg scripts/export_apkg.py
-	@echo "Exporting $<..."
-	$(PYTHON) scripts/export_apkg.py --audio-out raw/$*/audio $< data/$*
-
-# 2. Populate parsed/ CSVs (safe to rerun — never overwrites existing rows)
-review: $(DATA_CSVS) $(MANUAL_CSVS) scripts/prepare_review.py
-	@echo "Preparing parsed card files..."
-	$(PYTHON) scripts/prepare_review.py
+parsed/%/cards.csv: raw/%/apkg/%.apkg scripts/ingest.py
+	@echo "Ingesting $<..."
+	$(PYTHON) scripts/ingest.py $< parsed/$* --audio-out raw/$*/audio
 
 # Preprocessing: generate emoji images for vocabulary words (outside main pipeline)
 # Only fetches images that don't exist yet — safe to rerun.
@@ -122,21 +114,19 @@ deploy:
 	rclone copyto "output/Omniglot Phrasen.txt" "$(REMOTE)/Omniglot Phrasen.txt" --ignore-times --progress
 	rclone sync "output/Omniglot Phrasen Media/" "$(REMOTE)/Omniglot Phrasen Media/" --progress
 
-# Remove only generated files — never review files or source .apkg
+# Remove only generated output files — never parsed cards or raw sources
 clean-generated:
-	rm -rf data/*/cards.csv output/
-	@echo "Removed generated files. Parsed cards, raw sources, and .apkg files untouched."
+	rm -rf output/
+	@echo "Removed generated output. Parsed cards and raw sources untouched."
 
 help:
-	@echo "Targets: export  review  approve  approve-all  master  images  romanize  translate  audio  deck  all  deploy  clean-generated"
+	@echo "Targets: ingest  images  romanize  translate  audio  deck  all  deploy  clean-generated"
 	@echo ""
 	@echo "Normal workflow:"
-	@echo "  1. make export                          (after adding a new .apkg)"
-	@echo "  2. make review                          (populates parsed/<deck>/cards.csv)"
-	@echo "  3. review parsed/<deck>/cards.csv"
+	@echo "  1. make ingest                          (after adding a new .apkg → parsed/<deck>/cards.csv)"
+	@echo "  2. edit parsed/<deck>/cards.csv by hand"
 	@echo "     add blacklist/replace rules to parsed/<deck>/fixes.csv if needed"
-	@echo "  4. make master                          (merges approved cards)"
-	@echo "  5. make images                          (generates missing emoji PNGs — requires ollama)"
+	@echo "  3. make images                          (generates missing emoji PNGs — requires ollama)"
 	@echo "     make translate                       (generates missing EN→DE translations — requires ollama)"
-	@echo "  6. make audio                           (generates missing TTS audio)"
-	@echo "  7. make deck                            (builds output/master_en.txt + output/master_de.txt)"
+	@echo "  4. make audio                           (generates missing TTS audio)"
+	@echo "  5. make deck                            (builds output/ decks)"

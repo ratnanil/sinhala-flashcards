@@ -1,23 +1,43 @@
 #!/usr/bin/env python3
 """
-One-off parser: raw/omniglot-phrases/html/omniglot-phrases.html → data/omniglot-phrases/cards.csv
+One-off parser: raw/omniglot-phrases/html/omniglot-phrases.html → parsed/omniglot-phrases/cards.csv
 
 The HTML table has English → Sinhala rows. Each Sinhala cell may contain
 multiple variants (separated by <br /> or newlines), each with optional
 audio link and romanization in parentheses.
 
-Output columns: english, sinhala, romanized, audio_file, notes
-
-Review the CSV by hand after running — a few edge cases may need manual fixes.
+Append-only: existing cards (matched by stable ID) are never overwritten.
+Review parsed/omniglot-phrases/cards.csv by hand after running.
 """
 
 import csv
+import hashlib
 import html
 import re
 from pathlib import Path
 
-HTML_FILE = Path("raw/omniglot-phrases/html/omniglot-phrases.html")
-OUT_CSV   = Path("data/omniglot-phrases/cards.csv")
+HTML_FILE  = Path("raw/omniglot-phrases/html/omniglot-phrases.html")
+OUT_CSV    = Path("parsed/omniglot-phrases/cards.csv")
+FIELDNAMES = ['id', 'source_deck', 'sinhala', 'english', 'romanized', 'audio_file']
+FIX_FIELDS = ['type', 'key', 'value', 'replacement', 'note']
+
+
+def card_id(sinhala: str) -> str:
+    h = hashlib.md5(sinhala.encode()).hexdigest()[:8]
+    return f'omniglot-phrases_{h}'
+
+
+def load_existing_ids(path: Path) -> set:
+    if not path.exists():
+        return set()
+    with open(path, newline='', encoding='utf-8') as f:
+        return {row['id'] for row in csv.DictReader(f)}
+
+
+def ensure_fixes_stub(fixes_path: Path) -> None:
+    if not fixes_path.exists():
+        with open(fixes_path, 'w', newline='', encoding='utf-8') as f:
+            csv.DictWriter(f, fieldnames=FIX_FIELDS).writeheader()
 
 
 def unescape(s):
@@ -139,7 +159,9 @@ def main():
     rows = re.findall(r'<tr>(.*?)</tr>', div.group(1), re.DOTALL)
     print(f"Found {len(rows)} rows (including header)")
 
-    cards = []
+    existing = load_existing_ids(OUT_CSV)
+
+    new_rows = []
     for i, row in enumerate(rows):
         cells = re.findall(r'<td>(.*?)</td>', row, re.DOTALL)
         if len(cells) != 2:
@@ -147,30 +169,40 @@ def main():
         if i == 0:  # header row
             continue
 
-        english, notes = parse_english_cell(cells[0])
+        english, _notes = parse_english_cell(cells[0])
         variants = parse_sinhala_cell(cells[1])
 
         if not variants:
             print(f"  WARNING row {i}: no variants extracted for {english!r}")
             continue
 
-        for sinhala, romanized, audio_file, variant_note in variants:
-            combined_notes = ' | '.join(filter(None, [notes, variant_note]))
-            cards.append({
-                'english':    english,
-                'sinhala':    sinhala,
-                'romanized':  romanized,
-                'audio_file': audio_file,
-                'notes':      combined_notes,
+        for sinhala, romanized, audio_file, _variant_note in variants:
+            cid = card_id(sinhala)
+            if cid in existing:
+                continue
+            new_rows.append({
+                'id':          cid,
+                'source_deck': 'omniglot-phrases',
+                'sinhala':     sinhala,
+                'english':     english,
+                'romanized':   romanized,
+                'audio_file':  audio_file,
             })
 
     OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
-    with open(OUT_CSV, 'w', newline='', encoding='utf-8') as f:
-        w = csv.DictWriter(f, fieldnames=['english', 'sinhala', 'romanized', 'audio_file', 'notes'])
-        w.writeheader()
-        w.writerows(cards)
+    if not new_rows:
+        print('no new cards')
+    else:
+        write_header = not OUT_CSV.exists()
+        with open(OUT_CSV, 'a', newline='', encoding='utf-8') as f:
+            w = csv.DictWriter(f, fieldnames=FIELDNAMES)
+            if write_header:
+                w.writeheader()
+            w.writerows(new_rows)
+        status = 'created' if write_header else 'appended'
+        print(f"{status} {len(new_rows)} cards → {OUT_CSV}")
 
-    print(f"{len(cards)} cards → {OUT_CSV}")
+    ensure_fixes_stub(OUT_CSV.parent / 'fixes.csv')
 
 
 if __name__ == '__main__':
