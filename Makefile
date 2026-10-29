@@ -29,22 +29,28 @@ REMOTE     := Dropbox:Flashcards Deluxe
         deck deploy clean-generated help \
         deck-ankiweb-vocab deck-omniglot-phrases \
         deploy-ankiweb-vocab deploy-omniglot-phrases \
-        parse-omniglot-phrases parse-ilovelanguages
+        parse-everflip-sinhala parse-omniglot-phrases parse-ilovelanguages
 
 all: deck
 
 # ── A → B ──────────────────────────────────────────────────────────────────
 
-parse: $(patsubst %, parse-%, $(APKG_DECKS)) parse-omniglot-phrases parse-ilovelanguages
+parse: $(patsubst %, parse-%, $(APKG_DECKS)) parse-everflip-sinhala parse-omniglot-phrases parse-ilovelanguages
 
-# HTML-sourced decks — explicit rules, not in APKG_DECKS
+# Multi-apkg sources — explicit rules
+parse-everflip-sinhala:
+	@for apkg in A_raw/everflip-sinhala/apkg/*.apkg; do \
+		$(PYTHON) scripts/ingest.py $$apkg B_parsed/everflip-sinhala; \
+	done
+
+# HTML-sourced decks — explicit rules
 parse-omniglot-phrases:
 	$(PYTHON) scripts/parse_omniglot.py
 
 parse-ilovelanguages:
 	$(PYTHON) scripts/parse_ilovelanguages.py
 
-# .apkg-sourced decks
+# .apkg-sourced decks (one apkg per folder, folder name matches apkg name)
 parse-%:
 	@echo "Parsing $*..."
 	$(PYTHON) scripts/ingest.py A_raw/$*/apkg/$*.apkg B_parsed/$* --audio-out A_raw/$*/audio
