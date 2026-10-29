@@ -78,7 +78,7 @@ Generated for all cards. Enabled in `make enrich-tts`.
 
 Only needed for everflip cards (vocab cards have human recordings). Deferred until everflip cards
 are included in the build. Voice to use: `si-LK-SameeraNeural` (male, chosen after comparing
-both si-LK voices). Line is commented out in `make audio` — uncomment when ready.
+both si-LK voices). Use `make enrich-tts-si-<deck>` when ready (deferred until everflip cards are included).
 
 ### Dead end: Piper TTS — `chan4lk/piper-tts-sinhala`
 
@@ -312,7 +312,7 @@ Sinhala-Flashcards/
 - Multi-device Dropbox sync: switched to Full Dropbox access; all devices share `Flashcards Deluxe/`
 
 **Next:**
-1. Uncomment Sinhala TTS in `make enrich-tts` and include everflip cards in the build
+1. Add everflip cards to the build and run `make enrich-tts-si-<deck>` for Sinhala TTS
 2. Search GitHub / Kaggle for additional Sinhala data
 
 ### ✓ Done: Pseudo-phonetics (romanized Sinhala)
