@@ -34,12 +34,11 @@ Every step has a per-deck target and an aggregate that runs all decks:
 make parse-ankiweb-vocab        # extract .apkg → B_parsed/ankiweb-vocab/cards.csv
 make parse-omniglot-phrases     # parse HTML    → B_parsed/omniglot-phrases/cards.csv
 make parse-everflip-sinhala     # extract 8 .apkg files → B_parsed/everflip-sinhala/cards.csv
-                                # ↳ curate B_parsed/<deck>/cards.csv and fixes.csv by hand
-
-make enhance-ankiweb-vocab      # ffmpeg: highpass + noise reduction + loudnorm
-                                # A_raw/ankiweb-vocab/audio/ → B_parsed/ankiweb-vocab/audio_enhanced/
+                                # ↳ curate B_parsed/<deck>/cards.csv and A_raw/<deck>/fixes.csv by hand
 
 # ── B → C: enrich ────────────────────────────────────────────────────────────
+make enrich-enhance-<deck>      # ffmpeg: highpass + noise reduction + loudnorm
+                                # A_raw/<deck>/audio/ → B_parsed/<deck>/audio_enhanced/
 make enrich-romanize-<deck>     # IAST transliteration → B_parsed/<deck>/cards.csv (romanized col)
 make enrich-translate-<deck>    # EN→DE via DeepL      → C_enriched/<deck>/translations/translations.csv
 make enrich-tts-<deck>          # German TTS           → C_enriched/<deck>/audio/<card_id>_de.mp3
@@ -255,12 +254,12 @@ Sinhala-Flashcards/
 │   └── <source>/
 │       ├── apkg/           source .apkg files (for Anki-derived sources)
 │       ├── audio/          human recordings (never modified)
-│       └── html/           scraped source HTML (for HTML-parsed sources)
+│       ├── html/           scraped source HTML (for HTML-parsed sources)
+│       └── fixes.csv       blacklist/replace rules (hand-edited; survives B_parsed wipe)
 ├── B_parsed/                 cleaned card data (deterministic; editable)
 │   └── <deck>/
 │       ├── cards.csv           canonical card data per deck
-│       ├── fixes.csv           blacklist/replace rules (hand-edited)
-│       └── audio_enhanced/     ffmpeg-processed recordings (make enhance)
+│       └── audio_enhanced/     ffmpeg-processed recordings (make enrich-enhance)
 ├── C_enriched/               generated assets (expensive, non-deterministic)
 │   └── <source>/
 │       ├── cards.csv               enriched snapshot written by make deck-<deck>
@@ -277,7 +276,7 @@ Sinhala-Flashcards/
     ├── generate_translations.py  EN→DE translations via Ollama (make enrich-translate)
     ├── build_deck.py           assemble final Flashcard Deluxe .txt + Media/
     ├── generate_audio.py       TTS for cards without recordings (make enrich-tts)
-    ├── enhance_audio.py        ffmpeg audio quality enhancement (make enhance)
+    ├── enhance_audio.py        ffmpeg audio quality enhancement (make enrich-enhance)
     └── generate_romanization.py  IAST transliteration of Sinhala script (make enrich-romanize)
 ```
 
@@ -302,7 +301,7 @@ Sinhala-Flashcards/
 - `make enrich-images` / `make enrich-images-<deck>` working: emoji PNGs via Ollama + Twemoji, keyed by card ID
 - `make enrich-translate` / `make enrich-translate-<deck>` working: per-deck EN→DE translations (no cross-deck bleed)
 - `make enrich-tts` / `make enrich-tts-<deck>` generates German TTS (`de-CH-LeniNeural`)
-- `make enhance` / `make enhance-<deck>` improves audio quality (highpass + afftdn noise reduction + loudnorm)
+- `make enrich-enhance` / `make enrich-enhance-<deck>` improves audio quality (highpass + afftdn noise reduction + loudnorm)
 - `make enrich-romanize` / `make enrich-romanize-<deck>` generates IAST transliteration; displayed as Text 3
 - Multi-device Dropbox sync: switched to Full Dropbox access; all devices share `Flashcards Deluxe/`
 
@@ -336,7 +335,7 @@ by `build_deck.py` (overrides originals for matching filenames).
 
 Filters applied: `highpass=f=80` → `afftdn=nr=20:nf=-40` → `loudnorm=I=-16`.
 Result: mean volume −44 dB → −20 dB; background noise substantially reduced.
-Rerun with: `make enhance` (skips already-processed files; use `--force` to redo all).
+Rerun with: `make enrich-enhance` (skips already-processed files; use `--force` to redo all).
 
 ### Possible future source: Cornell Basic Dialogs
 

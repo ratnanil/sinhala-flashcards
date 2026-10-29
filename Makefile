@@ -8,7 +8,7 @@
 #
 # Per-deck targets:
 #   make parse-<deck>             A → B: parse source into B_parsed/<deck>/cards.csv
-#   make enhance-<deck>           A → B: enhance Sinhala audio quality
+#   make enrich-enhance-<deck>    B → C: enhance Sinhala audio quality
 #   make enrich-romanize-<deck>   B → C: generate romanization
 #   make enrich-translate-<deck>  B → C: EN→DE translations    (requires DEEPL_API_KEY)
 #   make enrich-images-<deck>     B → C: emoji images          (requires ollama)
@@ -17,7 +17,7 @@
 #   make deploy-<deck>            D → Dropbox
 #
 # Aggregate targets run all decks:
-#   make parse / enhance / enrich-romanize / enrich-translate / enrich-images / enrich-tts / deck / deploy
+#   make parse / enrich-enhance / enrich-romanize / enrich-translate / enrich-images / enrich-tts / deck / deploy
 
 PYTHON     := python3
 APKG_DECKS := $(patsubst A_raw/%/apkg/%.apkg, %, $(wildcard A_raw/*/apkg/*.apkg))
@@ -25,7 +25,7 @@ ALL_DECKS  := $(patsubst B_parsed/%/cards.csv, %, $(wildcard B_parsed/*/cards.cs
 DECK_DEPS  := scripts/build_deck.py
 REMOTE     := Dropbox:Flashcards Deluxe
 
-.PHONY: all parse enhance enrich-romanize enrich-translate enrich-images enrich-tts \
+.PHONY: all parse enrich-enhance enrich-romanize enrich-translate enrich-images enrich-tts \
         deck deploy clean-generated help \
         deck-ankiweb-vocab deck-omniglot-phrases \
         deploy-ankiweb-vocab deploy-omniglot-phrases \
@@ -55,18 +55,18 @@ parse-%:
 	@echo "Parsing $*..."
 	$(PYTHON) scripts/ingest.py A_raw/$*/apkg/$*.apkg B_parsed/$* --audio-out A_raw/$*/audio
 
-enhance: $(patsubst %, enhance-%, $(ALL_DECKS))
+# ── B → C ──────────────────────────────────────────────────────────────────
 
-enhance-%:
+enrich-enhance: $(patsubst %, enrich-enhance-%, $(ALL_DECKS))
+
+enrich-enhance-%:
 	@if [ -d A_raw/$*/audio ]; then \
 		$(PYTHON) scripts/enhance_audio.py \
 			--src A_raw/$*/audio \
 			--dst B_parsed/$*/audio_enhanced; \
 	else \
-		echo "enhance-$*: no audio dir, skipping."; \
+		echo "enrich-enhance-$*: no audio dir, skipping."; \
 	fi
-
-# ── B → C ──────────────────────────────────────────────────────────────────
 
 enrich-romanize: $(patsubst %, enrich-romanize-%, $(ALL_DECKS))
 
@@ -129,4 +129,4 @@ help:
 	@echo "  Steps:   parse  enhance  enrich-romanize  enrich-translate  enrich-images  enrich-tts  deck  deploy"
 	@echo "  Decks:   $(ALL_DECKS)"
 	@echo ""
-	@echo "Aggregate: make parse / enhance / enrich-romanize / enrich-translate / enrich-images / enrich-tts / deck / deploy"
+	@echo "Aggregate: make parse / enrich-enhance / enrich-romanize / enrich-translate / enrich-images / enrich-tts / deck / deploy"
