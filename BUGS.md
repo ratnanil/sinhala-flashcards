@@ -70,27 +70,11 @@ Then run `make deck-ankiweb-vocab`.
 
 ---
 
-## 5. German TTS pronounced with English accent
-
-**Symptom:** Some German TTS audio is read with English pronunciation.
-Known example: `erzählen` pronounced as *erselen* instead of *ɛɐ̯ˈtsɛːlən*.
-
-**Root cause:** The voice `de-DE-KatjaNeural` is monolingual but occasionally mispronounces
-German-specific phonemes (ä, ö, ü, ch, z as /ts/, etc.).
-
-**Likely affected cards:** Any word with German-specific phonemes. `erzählen` is a confirmed case.
-
-**Fix:** For each known-bad card, delete `C_enriched/ankiweb-vocab/audio/<card_id>_de.mp3`,
-then run `make enrich-tts-ankiweb-vocab && make deck-ankiweb-vocab`.
-
----
-
 ## Summary — files to edit
 
 | File | Issues |
 |------|--------|
-| `C_enriched/ankiweb-vocab/translations/translations.csv` | bugs 1, 2, 3 — edit German values directly |
-| `C_enriched/ankiweb-vocab/audio/*.mp3` | bugs 1, 2, 5 — delete stale/bad audio files |
+| `C_enriched/ankiweb-vocab/translations/translations.csv` | bugs 1, 2, 3 — stale; rerun `make enrich-translate-ankiweb-vocab` |
 | `C_enriched/ankiweb-vocab/images/vocab_544c5cbd.png` | bug 4 — delete and regenerate or replace manually |
 
 After all edits: `make enrich-tts-ankiweb-vocab && make deck-ankiweb-vocab && make deploy-ankiweb-vocab`
@@ -98,6 +82,16 @@ After all edits: `make enrich-tts-ankiweb-vocab && make deck-ankiweb-vocab && ma
 ---
 
 ## Resolved
+
+### ✓ Bug 5: German TTS pronounced with English accent
+
+**Symptom:** `de-DE-KatjaNeural` mispronounced German-specific phonemes (ä, ö, ü, z as /ts/, etc.).
+Known example: `erzählen` → *erselen*.
+
+**Fix applied:** Switched voice to `de-CH-LeniNeural` in `make enrich-tts`. All stale TTS audio
+deleted — will be regenerated on next pipeline run.
+
+---
 
 ### ✓ Bug 6: Wrong Sinhala source recording for *stehen* / නවත්තන්න (vocab_09fa560a)
 

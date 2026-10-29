@@ -80,7 +80,7 @@ enrich-images-%:
 enrich-tts: $(patsubst %, enrich-tts-%, $(ALL_DECKS))
 
 enrich-tts-%:
-	$(PYTHON) scripts/generate_audio.py --engine edge-tts --voice de-DE-KatjaNeural \
+	$(PYTHON) scripts/generate_audio.py --engine edge-tts --voice de-CH-LeniNeural \
 		--text-column german --lang de \
 		--source B_parsed/$*/cards.csv
 

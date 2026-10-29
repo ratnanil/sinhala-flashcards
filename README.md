@@ -71,8 +71,7 @@ File existence is the source of truth — no registry file needed.
 
 ### German (side 1) — active
 
-Voice: `de-DE-SeraphinaMultilingualNeural` (female, chosen after comparing all 6 de-DE voices).
-Generated for all cards. Enabled in `make enrich-tts`.
+Voice: `de-CH-LeniNeural` (Swiss German female). Enabled in `make enrich-tts`.
 
 ### Sinhala (side 2) — deferred
 
@@ -306,7 +305,7 @@ Sinhala-Flashcards/
 - 8 everflip decks: exported and reviewed (all approved), excluded from build until TTS audio is added
 - `make enrich-images` / `make enrich-images-<deck>` working: emoji PNGs via Ollama + Twemoji, keyed by card ID
 - `make enrich-translate` / `make enrich-translate-<deck>` working: per-deck EN→DE translations (no cross-deck bleed)
-- `make enrich-tts` / `make enrich-tts-<deck>` generates German TTS (`de-DE-SeraphinaMultilingualNeural`)
+- `make enrich-tts` / `make enrich-tts-<deck>` generates German TTS (`de-CH-LeniNeural`)
 - `make enhance` / `make enhance-<deck>` improves audio quality (highpass + afftdn noise reduction + loudnorm)
 - `make enrich-romanize` / `make enrich-romanize-<deck>` generates IAST transliteration; displayed as Text 3
 - Multi-device Dropbox sync: switched to Full Dropbox access; all devices share `Flashcards Deluxe/`
