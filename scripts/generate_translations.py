@@ -1,159 +1,150 @@
 #!/usr/bin/env python3
 """
-Generate English → German translations for vocabulary words using Ollama.
+Generate English → German translations for vocabulary words using DeepL.
 
-Translations are stored in a separate join table (data/translations.csv) keyed
-by English word, so they can be refined independently of the source decks.
-Already-translated words are skipped — safe to rerun.
+Translations are stored in C_enriched/<source>/translations/translations.csv,
+keyed by card ID (with english included for readability). Already-translated
+cards are skipped — safe to rerun.
+
+Requires: DEEPL_API_KEY environment variable (free keys end with :fx).
 
 Usage:
-    python scripts/generate_translations.py
     python scripts/generate_translations.py --source B_parsed/ankiweb-vocab/cards.csv
-    python scripts/generate_translations.py --model qwen3.5 --output C_enriched/ankiweb-vocab/translations.csv
+    python scripts/generate_translations.py --force   # retranslate everything
 """
 
 import argparse
 import csv
 import json
+import os
 import sys
-import time
 import urllib.request
 from pathlib import Path
 
 
-OLLAMA_URL = 'http://localhost:11434/api/generate'
+def translate(english: str, api_key: str) -> str:
+    """Translate one English vocabulary entry to German via DeepL.
 
+    Verbs ("to go") are sent as-is → DeepL returns the infinitive ("gehen").
+    All other words get "the " prepended → DeepL returns the noun with its
+    German article ("the mango" → "die Mango", "the pomegranate" → "der Granatapfel").
+    """
+    text = english if english.lower().startswith('to ') else f'the {english}'
 
-def check_ollama() -> bool:
-    try:
-        urllib.request.urlopen('http://localhost:11434/api/tags', timeout=2)
-        return True
-    except Exception:
-        return False
-
-
-def translate(english: str, sinhala: str, romanized: str, model: str) -> str:
-    """Ask Ollama to translate a Sinhala concept to German. Returns translation or ''."""
-    context = f"The Sinhala is '{sinhala}'"
-    if romanized:
-        context += f" (romanized: '{romanized}')"
-    prompt = (
-        f"You are building a Sinhala–German flashcard deck. "
-        f"The English gloss for this card is '{english}'. {context}. "
-        f"Translate the Sinhala concept to German. "
-        f"For nouns, include the definite article (der/die/das). "
-        f"For verbs, use the infinitive. "
-        f"For adjectives such as colors, give the uninflected base form with no article. "
-        f"Reply with ONLY the German translation, nothing else."
-    )
+    base = 'https://api-free.deepl.com' if api_key.endswith(':fx') else 'https://api.deepl.com'
     payload = json.dumps({
-        'model':  model,
-        'prompt': prompt,
-        'stream': False,
-        'think':  False,
-        'options': {'temperature': 0},
+        'text':        [text],
+        'source_lang': 'EN',
+        'target_lang': 'DE',
     }).encode()
-
     req = urllib.request.Request(
-        OLLAMA_URL,
+        f'{base}/v2/translate',
         data=payload,
-        headers={'Content-Type': 'application/json'},
+        headers={
+            'Content-Type':  'application/json',
+            'Authorization': f'DeepL-Auth-Key {api_key}',
+        },
     )
     try:
-        with urllib.request.urlopen(req, timeout=120) as resp:
+        with urllib.request.urlopen(req, timeout=30) as resp:
             data = json.loads(resp.read())
-            return data.get('response', '').strip()
+            return data['translations'][0]['text'].strip()
     except Exception as e:
-        print(f'    Ollama error: {e}')
+        print(f'    DeepL error: {e}')
         return ''
 
 
-def load_existing(output_path: Path) -> dict:
-    """Load existing translations. Returns {english: german}."""
+def load_existing(output_path: Path) -> set:
+    """Return set of card IDs already translated."""
     if not output_path.exists():
-        return {}
+        return set()
     with open(output_path, newline='', encoding='utf-8') as f:
-        return {row['english']: row['german'] for row in csv.DictReader(f)}
+        return {row['id'] for row in csv.DictReader(f)}
 
 
-def collect_words(sources: list, source_deck: str | None = None) -> list:
-    """Return sorted list of unique {english, sinhala, romanized} dicts."""
-    seen: dict = {}  # english → {english, sinhala, romanized}
+def collect_cards(sources: list) -> list:
+    """Return list of {id, english} dicts, deduplicated by card ID."""
+    seen: set = set()
+    cards: list = []
     for src in sources:
         with open(src, newline='', encoding='utf-8') as f:
             for row in csv.DictReader(f):
-                if source_deck and row.get('source_deck', '') != source_deck:
-                    continue
-                word      = row.get('english', '').strip()
-                sinhala   = row.get('sinhala', '').strip()
-                romanized = row.get('romanized', '').strip()
-                if word and word not in seen:
-                    seen[word] = {'english': word, 'sinhala': sinhala, 'romanized': romanized}
-    return sorted(seen.values(), key=lambda x: x['english'])
+                card_id = row.get('id', '').strip()
+                english = row.get('english', '').strip()
+                if card_id and english and card_id not in seen:
+                    seen.add(card_id)
+                    cards.append({'id': card_id, 'english': english})
+    return sorted(cards, key=lambda x: x['english'])
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Generate EN→DE translations via Ollama')
+    parser = argparse.ArgumentParser(description='Generate EN→DE translations via DeepL')
     parser.add_argument('--source', default=None,
-                        help='CSV to read English words from (default: all B_parsed/*/cards.csv)')
-    parser.add_argument('--model',  default='qwen3.5', help='Ollama model to use')
+                        help='CSV to read cards from (default: all B_parsed/*/cards.csv)')
     parser.add_argument('--output', default=None,
-                        help='Output join table (default: C_enriched/translations/<source>.csv)')
-    parser.add_argument('--source-deck', default=None,
-                        help='Only translate cards from this source_deck')
+                        help='Output CSV (default: C_enriched/<source>/translations/translations.csv)')
     parser.add_argument('--force', action='store_true',
-                        help='Retranslate all words, overwriting existing entries')
+                        help='Retranslate all cards, overwriting existing entries')
     args = parser.parse_args()
+
+    api_key = os.environ.get('DEEPL_API_KEY', '')
+    if not api_key:
+        print('ERROR: DEEPL_API_KEY environment variable not set')
+        sys.exit(1)
 
     sources = [Path(args.source)] if args.source else sorted(Path('B_parsed').glob('*/cards.csv'))
     if args.output:
         output_path = Path(args.output)
     elif args.source:
-        source_name = Path(args.source).parent.name
-        output_path = Path('C_enriched') / source_name / 'translations.csv'
+        output_path = Path('C_enriched') / Path(args.source).parent.name / 'translations' / 'translations.csv'
     else:
-        print('ERROR: --output required when no --source given (no single source to default to)')
-        import sys; sys.exit(1)
-
-    existing = {} if args.force else load_existing(output_path)
-    words    = collect_words(sources, args.source_deck)
-    missing  = [w for w in words if w['english'] not in existing]
-
-    if not missing:
-        print(f'All {len(words)} words already translated. Nothing to do.')
-        return
-
-    print(f'{len(words)} words total, {len(missing)} translations missing.')
-
-    if not check_ollama():
-        print('ERROR: Ollama is not running. Start it with: ollama serve')
+        print('ERROR: --output required when no --source given')
         sys.exit(1)
 
-    # Append mode — write header only if file is new; force overwrites
+    existing = set() if args.force else load_existing(output_path)
+    cards    = collect_cards(sources)
+    missing  = [c for c in cards if c['id'] not in existing]
+
+    if not missing:
+        print(f'All {len(cards)} cards already translated. Nothing to do.')
+        return
+
+    print(f'{len(cards)} cards total, {len(missing)} to translate.')
+
+    # Cache API calls — if two cards share the same English gloss, translate once
+    cache: dict[str, str] = {}
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
     write_header = args.force or not output_path.exists()
     mode = 'w' if args.force else 'a'
     with open(output_path, mode, newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=['english', 'german'])
+        writer = csv.DictWriter(f, fieldnames=['id', 'english', 'german'])
         if write_header:
             writer.writeheader()
 
         ok = failed = 0
-        for entry in missing:
-            print(f"  {entry['english']!r}", end=' → ', flush=True)
-            german = translate(entry['english'], entry['sinhala'], entry['romanized'], args.model)
+        for card in missing:
+            english = card['english']
+            print(f"  {card['id']}  {english!r}", end=' → ', flush=True)
+            if english in cache:
+                german = cache[english]
+                print(f'{german}  (cached)')
+            else:
+                german = translate(english, api_key)
+                if german:
+                    cache[english] = german
             if german:
-                print(german)
-                writer.writerow({'english': entry['english'], 'german': german})
+                print(german) if english not in cache else None
+                writer.writerow({'id': card['id'], 'english': english, 'german': german})
                 f.flush()
                 ok += 1
             else:
-                print('(no result, skipped)')
+                print('(failed, skipped)')
                 failed += 1
-            time.sleep(0.05)
 
     print(f'\nDone: {ok} translated, {failed} failed.')
     if failed:
-        print('Tip: rerun to retry failed words.')
+        print('Tip: rerun to retry failed cards.')
 
 
 if __name__ == '__main__':

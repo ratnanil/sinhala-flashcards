@@ -1,7 +1,7 @@
 # Deutsch Sinhala — Known Bugs
 
 Deck: `D_output/Deutsch Sinhala.txt`
-Source: `B_parsed/ankiweb-vocab/cards.csv` + `C_enriched/ankiweb-vocab/translations.csv`
+Source: `B_parsed/ankiweb-vocab/cards.csv` + `C_enriched/ankiweb-vocab/translations/translations.csv`
 
 ---
 
@@ -12,11 +12,11 @@ Source: `B_parsed/ankiweb-vocab/cards.csv` + `C_enriched/ankiweb-vocab/translati
 | mango | `der Mango` | `die Mango` |
 | pineapple | `der Ananas` | `die Ananas` |
 
-**Root cause:** `C_enriched/ankiweb-vocab/translations.csv` — LLM assigned wrong grammatical gender.
+**Root cause:** `C_enriched/ankiweb-vocab/translations/translations.csv` — stale entries from old LLM-based pipeline; will be correct after re-running `make enrich-translate-ankiweb-vocab`.
 
 **Fix:**
-1. Edit `C_enriched/ankiweb-vocab/translations.csv`: correct the two entries.
-2. Delete stale TTS files `C_enriched/ankiweb-vocab/tts/audio/vocab_171ee3dd_de.mp3` and `C_enriched/ankiweb-vocab/tts/audio/vocab_5d9d9c69_de.mp3`.
+1. Edit `C_enriched/ankiweb-vocab/translations/translations.csv`: correct the two entries.
+2. Delete stale TTS files `C_enriched/ankiweb-vocab/audio/vocab_171ee3dd_de.mp3` and `C_enriched/ankiweb-vocab/audio/vocab_5d9d9c69_de.mp3`.
 3. Run `make enrich-tts-ankiweb-vocab && make deck-ankiweb-vocab`.
 
 ---
@@ -29,11 +29,11 @@ Source: `B_parsed/ankiweb-vocab/cards.csv` + `C_enriched/ankiweb-vocab/translati
 | orange (color) | තැඹිලි | `die Orange` | `orange` | *die Orange* = the fruit; the color is the adjective *orange* (uninflected) |
 | to play | ගහන්න | `spielen` | `schlagen` | *gahanna* = to hit/beat; *spielen* = to play games — wrong register |
 
-**Root cause:** `C_enriched/ankiweb-vocab/translations.csv` — LLM errors.
+**Root cause:** `C_enriched/ankiweb-vocab/translations/translations.csv` — stale entries from old LLM-based pipeline.
 
 **Fix:**
-1. Edit `C_enriched/ankiweb-vocab/translations.csv`: correct `pomegranate`, `orange`, `to play`.
-2. Delete stale TTS: `C_enriched/ankiweb-vocab/tts/audio/vocab_1b5610e6_de.mp3`, `vocab_6dd39305_de.mp3`, `vocab_ca4596ea_de.mp3`.
+1. Edit `C_enriched/ankiweb-vocab/translations/translations.csv`: correct `pomegranate`, `orange`, `to play`.
+2. Delete stale TTS: `C_enriched/ankiweb-vocab/audio/vocab_1b5610e6_de.mp3`, `vocab_6dd39305_de.mp3`, `vocab_ca4596ea_de.mp3`.
 3. Run `make enrich-tts-ankiweb-vocab && make deck-ankiweb-vocab`.
 
 ---
@@ -50,8 +50,8 @@ Flagged for human review.
 | to read | කියවන්න (kiyavanna) | `lesen` | *lesen* is correct; *kiyavanna* also covers recitation — probably fine |
 | to make | හදන්න (hadanna) | `machen` | *hadanna* = make/build/fix/prepare; *machen* is broad and acceptable but `herstellen` or `bauen` could be more precise |
 
-**Fix:** Edit `C_enriched/ankiweb-vocab/translations.csv`, delete corresponding TTS files from
-`C_enriched/ankiweb-vocab/tts/audio/`, then run `make enrich-tts-ankiweb-vocab && make deck-ankiweb-vocab`.
+**Fix:** Edit `C_enriched/ankiweb-vocab/translations/translations.csv`, delete corresponding TTS files from
+`C_enriched/ankiweb-vocab/audio/`, then run `make enrich-tts-ankiweb-vocab && make deck-ankiweb-vocab`.
 
 ---
 
@@ -80,7 +80,7 @@ German-specific phonemes (ä, ö, ü, ch, z as /ts/, etc.).
 
 **Likely affected cards:** Any word with German-specific phonemes. `erzählen` is a confirmed case.
 
-**Fix:** For each known-bad card, delete `C_enriched/ankiweb-vocab/tts/audio/<card_id>_de.mp3`,
+**Fix:** For each known-bad card, delete `C_enriched/ankiweb-vocab/audio/<card_id>_de.mp3`,
 then run `make enrich-tts-ankiweb-vocab && make deck-ankiweb-vocab`.
 
 ---
@@ -89,8 +89,8 @@ then run `make enrich-tts-ankiweb-vocab && make deck-ankiweb-vocab`.
 
 | File | Issues |
 |------|--------|
-| `C_enriched/ankiweb-vocab/translations.csv` | bugs 1, 2, 3 — edit German values directly |
-| `C_enriched/ankiweb-vocab/tts/audio/*.mp3` | bugs 1, 2, 5 — delete stale/bad audio files |
+| `C_enriched/ankiweb-vocab/translations/translations.csv` | bugs 1, 2, 3 — edit German values directly |
+| `C_enriched/ankiweb-vocab/audio/*.mp3` | bugs 1, 2, 5 — delete stale/bad audio files |
 | `C_enriched/ankiweb-vocab/images/vocab_544c5cbd.png` | bug 4 — delete and regenerate or replace manually |
 
 After all edits: `make enrich-tts-ankiweb-vocab && make deck-ankiweb-vocab && make deploy-ankiweb-vocab`

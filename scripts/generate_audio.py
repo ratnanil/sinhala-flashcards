@@ -2,63 +2,39 @@
 """
 Generate TTS audio for flashcard vocabulary using edge-tts or Piper.
 
-Reads a parsed cards.csv and generates audio for cards that have no recording yet.
-Audio files are written to C_enriched/tts/audio/ and registered in C_enriched/tts/registry.csv
-(a join table keyed by card ID + lang), so reruns never overwrite existing entries.
-
-build_deck.py loads tts_audio.csv and uses it to fill in missing audio.
+Reads a parsed cards.csv and generates audio for cards that don't have a file
+yet. Audio files are written to C_enriched/<source>/audio/ named <card_id>_<lang>.mp3.
+Existence of the file is the source of truth — no registry needed.
 
 Usage:
-    # Sinhala TTS for everflip cards (no human recording) — default
-    python scripts/generate_audio.py
-
     # German TTS for side 1
     python scripts/generate_audio.py --text-column german --lang de \\
-        --voice de-DE-ConradNeural
+        --voice de-DE-KatjaNeural --source B_parsed/ankiweb-vocab/cards.csv
 
-    # Use Piper instead of edge-tts
-    python scripts/generate_audio.py --engine piper --model models/si_LK-sinhala-medium.onnx
+    # Sinhala TTS for cards without a human recording
+    python scripts/generate_audio.py --source B_parsed/ankiweb-vocab/cards.csv
 
     # Regenerate everything
     python scripts/generate_audio.py --force
 
 edge-tts voices:
     Sinhala: si-LK-SameeraNeural (male, recommended), si-LK-ThiliniNeural (female)
-    German:  de-DE-ConradNeural, de-DE-KatjaNeural
-
-Piper model setup:
-    Sinhala: download si_LK-sinhala-medium.onnx + .onnx.json from
-             https://huggingface.co/chan4lk/piper-tts-sinhala
-    German:  download de_DE-thorsten-high.onnx + .onnx.json from
-             https://huggingface.co/rhasspy/piper-voices (de/de_DE/thorsten/high/)
+    German:  de-DE-KatjaNeural, de-DE-ConradNeural
 """
 
 import argparse
 import csv
-import re
 import subprocess
 import sys
 from pathlib import Path
 
 
-def sanitize(text: str) -> str:
-    return re.sub(r'[^a-z0-9]+', '_', text.lower()).strip('_')
-
-
-def load_existing(tts_csv: Path) -> set:
-    """Return set of (id, lang) already in tts_audio.csv."""
-    if not tts_csv.exists():
-        return set()
-    with open(tts_csv, newline='', encoding='utf-8') as f:
-        return {(row['id'], row['lang']) for row in csv.DictReader(f)}
-
-
 def load_translations(path: Path) -> dict:
-    """Return {english: german} from translations join table."""
+    """Return {card_id: german} from translations join table."""
     if not path.exists():
         return {}
     with open(path, newline='', encoding='utf-8') as f:
-        return {row['english']: row['german'] for row in csv.DictReader(f)}
+        return {row['id']: row['german'] for row in csv.DictReader(f)}
 
 
 def load_cards(source: Path, text_column: str, source_deck: str | None,
@@ -71,12 +47,11 @@ def load_cards(source: Path, text_column: str, source_deck: str | None,
                 continue
             text = row.get(text_column, '').strip()
             if not text and translations:
-                text = translations.get(row.get('english', '').strip(), '')
+                text = translations.get(row.get('id', '').strip(), '')
             if not text:
                 continue
             cards.append({
                 'id':         row.get('id', ''),
-                'english':    row.get('english', '').strip(),
                 'text':       text,
                 'audio_file': row.get('audio_file', '').strip(),
             })
@@ -126,28 +101,21 @@ def synthesize_piper(text: str, model: Path, out_file: Path) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(description='Generate TTS audio via edge-tts or Piper')
-    parser.add_argument('--engine',      default='edge-tts', choices=['edge-tts', 'piper'],
-                        help='TTS engine to use (default: edge-tts)')
+    parser.add_argument('--engine',      default='edge-tts', choices=['edge-tts', 'piper'])
     parser.add_argument('--voice',       default='si-LK-SameeraNeural',
                         help='edge-tts voice (default: si-LK-SameeraNeural)')
     parser.add_argument('--model',       default=None,
                         help='Piper .onnx model path (required when --engine piper)')
-    parser.add_argument('--source',      default='B_parsed/ankiweb-vocab/cards.csv',
-                        help='Cards CSV to read from (default: B_parsed/ankiweb-vocab/cards.csv)')
+    parser.add_argument('--source',      default='B_parsed/ankiweb-vocab/cards.csv')
     parser.add_argument('--text-column', default='sinhala',
                         help='CSV column to synthesize (default: sinhala)')
     parser.add_argument('--lang',        default='si',
-                        help='Language tag for the join table, e.g. si or de (default: si)')
+                        help='Language tag used in output filename, e.g. si or de (default: si)')
     parser.add_argument('--audio-dir',   default=None,
-                        help='Directory to write audio files (default: C_enriched/<source>/tts/audio)')
-    parser.add_argument('--tts-csv',     default=None,
-                        help='Join table for generated audio (default: C_enriched/<source>/tts/registry.csv)')
-    parser.add_argument('--translations', default=None,
-                        help='EN→DE join table to fill missing text (default: C_enriched/<source>/translations.csv)')
-    parser.add_argument('--source-deck', default=None,
-                        help='Only process cards from this source deck')
+                        help='Output directory (default: C_enriched/<source>/audio/)')
+    parser.add_argument('--source-deck', default=None)
     parser.add_argument('--force',       action='store_true',
-                        help='Regenerate audio even if already in tts_audio.csv')
+                        help='Regenerate audio even if the file already exists')
     args = parser.parse_args()
 
     if args.engine == 'piper' and not args.model:
@@ -157,26 +125,25 @@ def main():
         print(f'ERROR: model not found: {args.model}')
         sys.exit(1)
 
-    source_name = Path(args.source).parent.name
-    enriched    = Path('C_enriched') / source_name
-    audio_dir         = Path(args.audio_dir)   if args.audio_dir   else enriched / 'tts' / 'audio'
-    tts_csv           = Path(args.tts_csv)     if args.tts_csv     else enriched / 'tts' / 'registry.csv'
-    translations_path = Path(args.translations) if args.translations else enriched / 'translations.csv'
+    source_name       = Path(args.source).parent.name
+    enriched          = Path('C_enriched') / source_name
+    audio_dir         = Path(args.audio_dir) if args.audio_dir else enriched / 'audio'
+    translations_path = enriched / 'translations' / 'translations.csv'
+
     audio_dir.mkdir(parents=True, exist_ok=True)
     translations = load_translations(translations_path)
-    existing     = set() if args.force else load_existing(tts_csv)
     cards        = load_cards(Path(args.source), args.text_column, args.source_deck, translations)
+    ext          = 'mp3' if args.engine == 'edge-tts' else 'wav'
 
-    ext = 'mp3' if args.engine == 'edge-tts' else 'wav'
-
-    # For Sinhala: skip cards that already have a human recording
-    # For other langs: generate for all cards (side 1 audio is always TTS)
+    # Skip cards that already have a human recording (Sinhala only)
+    # For other langs (German side 1), generate for all cards
     if args.text_column == 'sinhala':
         to_generate = [c for c in cards
-                       if not c['audio_file'] and (c['id'], args.lang) not in existing]
+                       if not c['audio_file'] and
+                       (args.force or not (audio_dir / f"{c['id']}_{args.lang}.{ext}").exists())]
     else:
         to_generate = [c for c in cards
-                       if (c['id'], args.lang) not in existing]
+                       if args.force or not (audio_dir / f"{c['id']}_{args.lang}.{ext}").exists()]
 
     if not to_generate:
         print(f'Nothing to generate ({len(cards)} cards, all already done).')
@@ -184,33 +151,23 @@ def main():
 
     print(f'{len(cards)} cards total, {len(to_generate)} need {args.lang} audio.')
 
-    write_header = not tts_csv.exists() or args.force
-    mode = 'w' if args.force else 'a'
-
     ok = failed = 0
-    with open(tts_csv, mode, newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=['id', 'lang', 'audio_file'])
-        if write_header:
-            writer.writeheader()
+    for card in to_generate:
+        filename = f"{card['id']}_{args.lang}.{ext}"
+        out_file = audio_dir / filename
+        print(f"  {card['text']!r}", end=' → ', flush=True)
 
-        for card in to_generate:
-            filename = f"{card['id']}_{args.lang}.{ext}"
-            out_file = audio_dir / filename
-            print(f"  {card['text']!r}", end=' → ', flush=True)
+        if args.engine == 'edge-tts':
+            success = synthesize_edge(card['text'], args.voice, out_file)
+        else:
+            success = synthesize_piper(card['text'], Path(args.model), out_file)
 
-            if args.engine == 'edge-tts':
-                success = synthesize_edge(card['text'], args.voice, out_file)
-            else:
-                success = synthesize_piper(card['text'], Path(args.model), out_file)
-
-            if success:
-                print(filename)
-                writer.writerow({'id': card['id'], 'lang': args.lang, 'audio_file': filename})
-                f.flush()
-                ok += 1
-            else:
-                print('FAILED')
-                failed += 1
+        if success:
+            print(filename)
+            ok += 1
+        else:
+            print('FAILED')
+            failed += 1
 
     print(f'\nDone: {ok} generated, {failed} failed.')
     if failed:

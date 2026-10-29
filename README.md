@@ -66,8 +66,8 @@ that runs all decks (make enrich-translate). make deck runs all output decks.
 All TTS uses edge-tts (Microsoft neural voices, online). Requires internet at generation time
 but only needs to run once. Install: `pip install edge-tts`.
 
-Generated audio is stored in `C_enriched/<source>/tts/audio/` and registered in `C_enriched/<source>/tts/registry.csv`
-(join table keyed by card ID + lang), so reruns never overwrite existing entries.
+Generated audio is stored in `C_enriched/<source>/audio/` as `<card_id>_<lang>.mp3`.
+File existence is the source of truth — no registry file needed.
 
 ### German (side 1) — active
 
@@ -238,11 +238,10 @@ Notes:
 
 ## Translation (EN → DE)
 
-Stored in `C_enriched/<source>/translations.csv` as a join table (`english,german`), one file per
-source deck, separate from card data so translations can be curated independently.
+Stored in `C_enriched/<source>/translations/translations.csv` as a join table (`id,english,german`),
+keyed by card ID. The `english` column is included for readability. One file per source deck.
 
-`build_deck.py` auto-loads `C_enriched/<source>/translations.csv` at build time and fills the
-`german` column for any card where it is empty.
+`build_deck.py` auto-loads translations at build time and fills the `german` column by card ID.
 
 ```bash
 make enrich-translate                        # all decks; safe to rerun; requires ollama serve
@@ -250,8 +249,8 @@ make enrich-translate-ankiweb-vocab          # single deck
 python scripts/generate_translations.py --force   # retranslate everything
 ```
 
-Model: `qwen3.5` with `--think false`. Prompt asks for the definite article for nouns
-(`der/die/das`) and the infinitive for verbs. ~1 s per word.
+Uses DeepL API (`DEEPL_API_KEY` env var). Verbs sent as "to X" → infinitive; nouns sent as
+"the X" → article + noun. ~0.2 s per word. Free tier (500k chars/month) is sufficient.
 
 ## Directory structure
 
@@ -267,13 +266,13 @@ Sinhala-Flashcards/
 │       ├── cards.csv           canonical card data per deck
 │       ├── fixes.csv           blacklist/replace rules (hand-edited)
 │       └── audio_enhanced/     ffmpeg-processed recordings (make enhance)
-├── C_enriched/               LLM/model-generated assets (expensive, non-deterministic)
-│   └── <source>/               one directory per source deck, mirrors B_parsed/
-│       ├── translations.csv    EN→DE join table (make translate / translate-phrases)
-│       ├── images/             emoji PNGs (make images)
-│       └── tts/
-│           ├── registry.csv    TTS audio join table, keyed by card ID + lang
-│           └── audio/          TTS-generated audio files (make audio)
+├── C_enriched/               generated assets (expensive, non-deterministic)
+│   └── <source>/
+│       ├── cards.csv               enriched snapshot written by make deck-<deck>
+│       ├── translations/
+│       │   └── translations.csv    id, english, german — keyed by card ID
+│       ├── images/                 <card_id>.png — emoji PNGs
+│       └── audio/                  <card_id>_<lang>.mp3 — TTS audio
 ├── D_output/                 final Flashcard Deluxe import files + Media/ folders
 │   └── Deutsch Sinhala.txt
 └── scripts/

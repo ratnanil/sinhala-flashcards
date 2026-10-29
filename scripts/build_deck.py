@@ -35,20 +35,17 @@ def sanitize(word: str) -> str:
 
 
 def load_translations(path: Path) -> dict:
-    """Return {english: german} from a translations join table CSV."""
+    """Return {card_id: german} from a translations join table CSV."""
     if not path.exists():
         return {}
     with open(path, newline='', encoding='utf-8') as f:
-        return {row['english']: row['german'] for row in csv.DictReader(f)}
+        return {row['id']: row['german'] for row in csv.DictReader(f)}
 
 
-def load_tts_audio(path: Path, lang: str) -> dict:
-    """Return {card_id: audio_filename} for a given lang from tts_audio.csv."""
-    if not path.exists():
-        return {}
-    with open(path, newline='', encoding='utf-8') as f:
-        return {row['id']: row['audio_file']
-                for row in csv.DictReader(f) if row['lang'] == lang}
+def get_tts_filename(audio_dir: Path, card_id: str, lang: str) -> str:
+    """Return TTS audio filename if it exists, else ''."""
+    filename = f'{card_id}_{lang}.mp3'
+    return filename if (audio_dir / filename).exists() else ''
 
 
 def load_fixes(cards_path: Path) -> tuple:
@@ -91,20 +88,18 @@ def main():
     parser.add_argument('--source-deck',  default=None,
                         help='Only include cards where source_deck matches this value')
     parser.add_argument('--translations', default=None,
-                        help='EN→DE join table CSV (default: enriched/<source>/translations.csv, skipped if missing)')
-    parser.add_argument('--tts-audio',   default=None,
-                        help='TTS audio join table CSV (default: enriched/<source>/tts/registry.csv, skipped if missing)')
+                        help='ID→DE join table CSV (default: C_enriched/<source>/translations/translations.csv)')
     args = parser.parse_args()
 
     source      = Path(args.source)
     source_name = source.parent.name
     enriched    = Path('C_enriched') / source_name
     images_dir        = Path(args.images)      if args.images      else enriched / 'images'
-    translations_path = Path(args.translations) if args.translations else enriched / 'translations.csv'
-    tts_registry_path = Path(args.tts_audio)   if args.tts_audio   else enriched / 'tts' / 'registry.csv'
+    translations_path = Path(args.translations) if args.translations else enriched / 'translations' / 'translations.csv'
+    tts_audio_dir     = enriched / 'audio'
 
     # Build a unified audio map: filename → full path.
-    # Raw originals come from raw/*/audio/, enhanced from B_parsed/*/audio_enhanced/.
+    # Raw originals come from A_raw/*/audio/, enhanced from B_parsed/*/audio_enhanced/.
     # Enhanced is scanned second so it overwrites originals for the same filename.
     audio_map: dict[str, Path] = {}
     for audio_dir in sorted(Path('A_raw').glob('*/audio')):
@@ -119,10 +114,6 @@ def main():
     translations = load_translations(translations_path)
     if translations:
         print(f'Loaded {len(translations)} translations from {translations_path}')
-    tts_audio_si = load_tts_audio(tts_registry_path, lang='si')
-    tts_audio_de = load_tts_audio(tts_registry_path, lang='de')
-    if tts_audio_si or tts_audio_de:
-        print(f'Loaded TTS audio: {len(tts_audio_si)} Sinhala, {len(tts_audio_de)} German')
     blacklist, sinhala_fixes, english_fixes = load_fixes(source)
     out_path   = Path(args.out) if args.out else Path('D_output') / f'{source.parent.name}.txt'
     out_path.parent.mkdir(parents=True, exist_ok=True)
@@ -152,15 +143,13 @@ def main():
             if card_id in english_fixes:
                 row['english'] = english_fixes[card_id]
 
-            # Fill Sinhala audio from TTS join table if not already set in source
-            if tts_audio_si and not row.get('audio_file', '').strip():
-                row['audio_file'] = tts_audio_si.get(row.get('id', ''), '')
+            # Fill Sinhala audio from TTS if not already set in source
+            if not row.get('audio_file', '').strip():
+                row['audio_file'] = get_tts_filename(tts_audio_dir, card_id, 'si')
 
-            # Fill german column from join table if not already set in source
+            # Fill german column from translations join table if not already set in source
             if translations and not row.get('german', '').strip():
-                english = row.get('english', '').strip()
-                if english in translations:
-                    row['german'] = translations[english]
+                row['german'] = translations.get(card_id, '')
 
             s1    = row.get(args.side1,    '').strip()
             s2    = row.get(args.side2,    '').strip()
@@ -175,8 +164,8 @@ def main():
             img_file = images_dir / f'{card_id}.png'
             img = img_file.name if img_file.exists() else ''
 
-            # German audio (side 1) from TTS join table
-            audio_de = tts_audio_de.get(row.get('id', ''), '')
+            # German audio (side 1) — look up by file existence
+            audio_de = get_tts_filename(tts_audio_dir, card_id, 'de')
 
             s3 = row.get(args.side3, '').strip() if args.side3 else ''
 
@@ -245,7 +234,7 @@ def main():
 
     # Copy German TTS audio into the Media folder
     if has_audio_de:
-        audio_src = enriched / 'tts' / 'audio'
+        audio_src = tts_audio_dir
         media_dst = out_path.parent / f'{out_path.stem} Media'
         media_dst.mkdir(exist_ok=True)
         copied = skipped = 0

@@ -10,7 +10,7 @@
 #   make parse-<deck>             A → B: parse source into B_parsed/<deck>/cards.csv
 #   make enhance-<deck>           A → B: enhance Sinhala audio quality
 #   make enrich-romanize-<deck>   B → C: generate romanization
-#   make enrich-translate-<deck>  B → C: EN→DE translations    (requires ollama)
+#   make enrich-translate-<deck>  B → C: EN→DE translations    (requires DEEPL_API_KEY)
 #   make enrich-images-<deck>     B → C: emoji images          (requires ollama)
 #   make enrich-tts-<deck>        B → C: German TTS audio      (requires internet)
 #   make deck-<deck>              C → D: build Flashcard Deluxe output file
