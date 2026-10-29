@@ -49,10 +49,10 @@ def get_tts_filename(audio_dir: Path, card_id: str, lang: str) -> str:
 
 
 def load_fixes(cards_path: Path) -> tuple:
-    """Load fixes.csv from the same directory as cards.csv.
+    """Load fixes.csv from A_raw/<source>/fixes.csv.
     Returns (blacklisted_ids, sinhala_replacements, english_replacements).
     """
-    fixes_path = cards_path.parent / 'fixes.csv'
+    fixes_path = Path('A_raw') / cards_path.parent.name / 'fixes.csv'
     blacklist, sinhala_fixes, english_fixes = set(), {}, {}
     if not fixes_path.exists():
         return blacklist, sinhala_fixes, english_fixes

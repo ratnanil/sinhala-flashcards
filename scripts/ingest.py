@@ -135,7 +135,7 @@ def main():
         status = 'created' if write_header else 'appended'
         print(f'  {deck_name}: {status} {len(new_rows)} cards → {cards_path}')
 
-    ensure_fixes_stub(out_dir / 'fixes.csv')
+    ensure_fixes_stub(apkg_path.parent.parent / 'fixes.csv')
     print('Done.')
 
 

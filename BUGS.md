@@ -100,5 +100,5 @@ deleted — will be regenerated on next pipeline run.
 **Root cause:** Source recording `A_raw/ankiweb-vocab/audio/rec1590496296.mp3` is a bad take.
 Pipeline correctly referenced it; the recording itself was wrong.
 
-**Fix applied:** Blacklisted `vocab_09fa560a` in `B_parsed/ankiweb-vocab/fixes.csv`.
+**Fix applied:** Blacklisted `vocab_09fa560a` in `A_raw/ankiweb-vocab/fixes.csv`.
 Card is excluded from all decks until a correct recording is available.
