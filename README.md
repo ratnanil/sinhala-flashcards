@@ -25,41 +25,37 @@ never bleed across decks.
 
 ## Pipeline
 
+Four stages: `A_raw/` → `B_parsed/` → `C_enriched/` → `D_output/`
+
+Every step has a per-deck target and an aggregate that runs all decks:
+
+```bash
+# ── A → B: parse ─────────────────────────────────────────────────────────────
+make parse-ankiweb-vocab        # extract .apkg → B_parsed/ankiweb-vocab/cards.csv
+make parse-omniglot-phrases     # parse HTML    → B_parsed/omniglot-phrases/cards.csv
+make parse-everflip-sinhala     # extract 8 .apkg files → B_parsed/everflip-sinhala/cards.csv
+                                # ↳ curate B_parsed/<deck>/cards.csv and fixes.csv by hand
+
+make enhance-ankiweb-vocab      # ffmpeg: highpass + noise reduction + loudnorm
+                                # A_raw/ankiweb-vocab/audio/ → B_parsed/ankiweb-vocab/audio_enhanced/
+
+# ── B → C: enrich ────────────────────────────────────────────────────────────
+make enrich-romanize-<deck>     # IAST transliteration → B_parsed/<deck>/cards.csv (romanized col)
+make enrich-translate-<deck>    # EN→DE via DeepL      → C_enriched/<deck>/translations/translations.csv
+make enrich-tts-<deck>          # German TTS           → C_enriched/<deck>/audio/<card_id>_de.mp3
+make enrich-images-<deck>       # emoji PNGs via Ollama → C_enriched/<deck>/images/<card_id>.png
+
+# ── C → D: build ─────────────────────────────────────────────────────────────
+make deck-ankiweb-vocab         # → D_output/Deutsch Sinhala.txt + Media/
+make deck-omniglot-phrases      # → D_output/Omniglot Phrasen.txt + Media/
+
+# ── deploy ───────────────────────────────────────────────────────────────────
+make deploy-ankiweb-vocab       # rclone → Dropbox/Flashcards Deluxe/
+make deploy-omniglot-phrases
 ```
-── vocab deck ──────────────────────────────────────────────────────────────────
 
-A_raw/ankiweb-vocab/apkg/ankiweb-vocab.apkg
-    └─[make parse-ankiweb-vocab]────────→ B_parsed/ankiweb-vocab/cards.csv    ← curate here
-                                          B_parsed/ankiweb-vocab/fixes.csv    ← blacklist/replace rules
-                                          A_raw/ankiweb-vocab/audio/          ← human recordings extracted
-
-    [make enrich-translate-ankiweb-vocab]→ C_enriched/ankiweb-vocab/translations.csv  (EN→DE)
-    [make enrich-images-ankiweb-vocab]──→ C_enriched/ankiweb-vocab/images/<card_id>.png
-    [make enrich-tts-ankiweb-vocab]─────→ C_enriched/ankiweb-vocab/tts/audio/ + registry.csv
-
-    └─[make deck-ankiweb-vocab]─────────→ D_output/Deutsch Sinhala.txt
-
-
-── phrases deck ────────────────────────────────────────────────────────────────
-
-A_raw/omniglot-phrases/html/omniglot-phrases.html  (parsed once by scripts/parse_omniglot.py)
-    └─[make parse-omniglot-phrases]─────→ B_parsed/omniglot-phrases/cards.csv  ← curate here
-                                          B_parsed/omniglot-phrases/fixes.csv  ← blacklist/replace rules
-
-    [make enrich-translate-omniglot-phrases]→ C_enriched/omniglot-phrases/translations.csv  (EN→DE)
-    [make enrich-tts-omniglot-phrases]──→ C_enriched/omniglot-phrases/tts/audio/ + registry.csv
-
-    └─[make deck-omniglot-phrases]──────→ D_output/Omniglot Phrasen.txt
-
-
-── notes ───────────────────────────────────────────────────────────────────────
-
-B_parsed/<deck>/cards.csv is the canonical source for each deck — hand-edit it directly
-to fix Sinhala/English text, or add rules to fixes.csv to blacklist/replace cards.
-
-Every step has a per-deck target (make enrich-translate-ankiweb-vocab) and an aggregate
-that runs all decks (make enrich-translate). make deck runs all output decks.
-```
+Aggregate targets (`make parse`, `make enrich-translate`, `make deck`, …) run all decks at once.
+`B_parsed/<deck>/fixes.csv` is the curate layer — blacklist cards or override field values by card ID.
 
 ## TTS audio
 
