@@ -54,7 +54,7 @@ make deploy-omniglot-phrases
 ```
 
 Aggregate targets (`make parse`, `make enrich-translate`, `make deck`, …) run all decks at once.
-`B_parsed/<deck>/fixes.csv` is the curate layer — blacklist cards or override field values by card ID.
+`A_raw/<deck>/fixes.csv` is the curate layer — blacklist cards or override field values by card ID. Survives a full `B_parsed/` wipe.
 
 ## TTS audio
 
@@ -165,7 +165,7 @@ Categories: fruits, clothing, days of the week, colors, time words, ~50 colloqui
 
 Ingested via `scripts/ingest.py` → `B_parsed/ankiweb-vocab/cards.csv`; recordings in `A_raw/ankiweb-vocab/audio/`.
 
-### Active: `A_raw/everflip-sinhala-*/apkg/*.apkg` (8 decks)
+### Active: `A_raw/everflip-sinhala/apkg/*.apkg` (8 decks, merged)
 
 ~100 cards across 8 thematic decks: colors (12), days (11), family (12), greetings (11),
 nouns (15), numbers (15), politeness (12), questions (12). No audio. Sinhala → English only.
@@ -215,7 +215,7 @@ Discarded because:
 ## Images for children's decks
 
 Emoji PNGs from [jdecked/twemoji](https://github.com/jdecked/twemoji) (CC-BY 4.0, 72×72px),
-served via jsDelivr CDN. Stored in `images/<english_word>.png`, keyed by the English keyword.
+served via jsDelivr CDN. Stored in `C_enriched/<source>/images/<card_id>.png`, keyed by card ID.
 `build_deck.py` automatically includes `Picture 1` for any card that has a matching image file.
 
 Generation uses Ollama (`qwen3.5`, `--think false`) to pick an emoji per English word, then
@@ -238,7 +238,7 @@ keyed by card ID. The `english` column is included for readability. One file per
 `build_deck.py` auto-loads translations at build time and fills the `german` column by card ID.
 
 ```bash
-make enrich-translate                        # all decks; safe to rerun; requires ollama serve
+make enrich-translate                        # all decks; safe to rerun; requires DEEPL_API_KEY
 make enrich-translate-ankiweb-vocab          # single deck
 python scripts/generate_translations.py --force   # retranslate everything
 ```
@@ -273,7 +273,7 @@ Sinhala-Flashcards/
     ├── export_apkg.py          extract .apkg → CSV + audio
     ├── ingest.py               extract .apkg → B_parsed/<source>/cards.csv (append-only)
     ├── generate_images.py      generate emoji PNGs via Ollama + Twemoji (make enrich-images)
-    ├── generate_translations.py  EN→DE translations via Ollama (make enrich-translate)
+    ├── generate_translations.py  EN→DE translations via DeepL (make enrich-translate)
     ├── build_deck.py           assemble final Flashcard Deluxe .txt + Media/
     ├── generate_audio.py       TTS for cards without recordings (make enrich-tts)
     ├── enhance_audio.py        ffmpeg audio quality enhancement (make enrich-enhance)
