@@ -20,7 +20,10 @@
 #   make parse / enrich-enhance / enrich-romanize / enrich-translate / enrich-images / enrich-tts / deck / deploy
 
 PYTHON     := python3
-APKG_DECKS := $(patsubst A_raw/%/apkg/%.apkg, %, $(wildcard A_raw/*/apkg/*.apkg))
+# Decks where the apkg filename matches the deck folder name (handled by pattern rule parse-%)
+APKG_DECKS := $(foreach f,$(wildcard A_raw/*/apkg/*.apkg),\
+    $(if $(filter $(notdir $(patsubst %/apkg/,%,$(dir $f))),$(basename $(notdir $f))),\
+    $(notdir $(patsubst %/apkg/,%,$(dir $f)))))
 ALL_DECKS  := $(patsubst B_parsed/%/cards.csv, %, $(wildcard B_parsed/*/cards.csv))
 DECK_DEPS  := scripts/build_deck.py
 REMOTE     := Dropbox:Flashcards Deluxe
@@ -40,7 +43,8 @@ parse: $(patsubst %, parse-%, $(APKG_DECKS)) parse-everflip-sinhala parse-omnigl
 # Multi-apkg sources — explicit rules
 parse-everflip-sinhala:
 	@for apkg in A_raw/everflip-sinhala/apkg/*.apkg; do \
-		$(PYTHON) scripts/ingest.py $$apkg B_parsed/everflip-sinhala; \
+		cat=$$(basename $$apkg .apkg | sed 's/everflip-sinhala-//'); \
+		$(PYTHON) scripts/ingest.py $$apkg B_parsed/everflip-sinhala --category $$cat; \
 	done
 
 # HTML-sourced decks — explicit rules
@@ -97,13 +101,13 @@ deck: deck-ankiweb-vocab deck-omniglot-phrases
 deck-ankiweb-vocab: $(DECK_DEPS)
 	$(PYTHON) scripts/build_deck.py \
 		--source B_parsed/ankiweb-vocab/cards.csv \
-		--side1 german --side3 romanized \
+		--side1 german --side3 romanized --side4 english --merge-variants \
 		--out "D_output/Deutsch Sinhala.txt"
 
 deck-omniglot-phrases: $(DECK_DEPS)
 	$(PYTHON) scripts/build_deck.py \
 		--source B_parsed/omniglot-phrases/cards.csv \
-		--side1 german --side3 romanized \
+		--side1 german --side3 romanized --side4 english --merge-variants \
 		--out "D_output/Omniglot Phrasen.txt"
 
 # ── Deploy ─────────────────────────────────────────────────────────────────

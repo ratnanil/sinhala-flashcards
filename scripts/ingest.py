@@ -27,7 +27,7 @@ PAREN_RE       = re.compile(r'^(.*?)\s*\(([^)]+)\)\s*$')
 DIACRITIC_RE   = re.compile(r'[āēīōūňṁṃḍṭḷṅñÀ-öø-ÿ]', re.IGNORECASE)
 ENGLISH_PARENS = {'singular', 'plural', 'turn on', 'digit is 0', 'the everyday spoken form'}
 
-FIELDNAMES = ['id', 'source_deck', 'sinhala', 'english', 'romanized', 'audio_file']
+FIELDNAMES = ['id', 'source_deck', 'sinhala', 'english', 'romanized', 'audio_file', 'category']
 FIX_FIELDS = ['type', 'key', 'value', 'replacement', 'note']
 
 
@@ -79,6 +79,8 @@ def main():
     parser.add_argument('output_dir', help='Output directory, e.g. B_parsed/<source>')
     parser.add_argument('--audio-out', default=None,
                         help='Directory for audio files (default: A_raw/<source>/audio)')
+    parser.add_argument('--category', default='',
+                        help='Category label written to the category column')
     args = parser.parse_args()
 
     apkg_path  = Path(args.apkg)
@@ -121,6 +123,7 @@ def main():
             'english':     english,
             'romanized':   romanized,
             'audio_file':  raw['audio_file'],
+            'category':    args.category,
         })
 
     if not new_rows:

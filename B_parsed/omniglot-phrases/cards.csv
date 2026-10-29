@@ -1,6 +1,7 @@
 id,source_deck,sinhala,english,romanized,audio_file
 omniglot-phrases_bf5229d1,omniglot-phrases,සාදරයෙන් පිලිගන්නවා,Welcome,sadarayen piligannawa,welcome_sinhala.mp3
 omniglot-phrases_d522845d,omniglot-phrases,ආයුඛෝවන්,Hello,āyubūvan,hello_sinhala.mp3
+omniglot-phrases_d33385e7,omniglot-phrases,හලෝ,Hello,halō,
 omniglot-phrases_6c9e0853,omniglot-phrases,කොහොමද?,How are you?,kohomadha?,howareyou1_sinhala.mp3
 omniglot-phrases_03d0df8b,omniglot-phrases,කොහොමද  සැප  සනිප?,How are you?,kohomadha saepa sanīpa?,howareyou2_sinhala.mp3
 omniglot-phrases_4086c658,omniglot-phrases,සැප සනීප කොහොමද?,How are you?,saepa sanīpa kohomadha?,howareyou3_sinhala.mp3
@@ -23,6 +24,7 @@ omniglot-phrases_c6ca4e29,omniglot-phrases,හා,Goodbye,hā,goodbye4_sinhala.m
 omniglot-phrases_256e783e,omniglot-phrases,සභ ගමන්!,Good luck!,sabha gaman,goodluck1_sinhala.mp3
 omniglot-phrases_7eadf668,omniglot-phrases,වාසනා වේවා!,Good luck!,vāsanā vēvvā!,goodluck2_sinhala.mp3
 omniglot-phrases_1d9a9297,omniglot-phrases,වාසනාවන්!,Cheers! Good Health!,vāsatāvan,cheers1_sinhala.mp3
+omniglot-phrases_bff47919,omniglot-phrases,ඡය වේවා!,Cheers! Good Health!,jaya vevā!,
 omniglot-phrases_ec758067,omniglot-phrases,සුභ දවසක්,Have a nice day,subha davasak,haveaniceday_sinhala.mp3
 omniglot-phrases_71f80f1f,omniglot-phrases,විනොදෙන් කන්න,Bon appetit / Have a nice meal,vinoden kanna,bonappetit_sinhala.mp3
 omniglot-phrases_cefc68e0,omniglot-phrases,සුභ ගමනක් වෙවා,Bon voyage / Have a good journey,subha gamanak vēvā,bonvoyage_sinhala.mp3
@@ -31,28 +33,21 @@ omniglot-phrases_a9a5e6d3,omniglot-phrases,මත තේරෙනවා,I unders
 omniglot-phrases_3af70e4a,omniglot-phrases,මට ඔබව තේරැමි ගන්න බැනැ,I don't understand,mata obava therum ganna baha,nounderstand_sinhala.mp3
 omniglot-phrases_04be1dfc,omniglot-phrases,කරැණාකරල හෙමින් කියන්න,Please speak more slowly,karunākarala hemin kiyanna,slowly_sinhala.mp3
 omniglot-phrases_3af70e4a,omniglot-phrases,මට ඔබව තේරැමි ගන්න බැනැ,Please say that again,mata obava therum ganna baha,nounderstand_sinhala.mp3
-omniglot-phrases_91fd6c13,omniglot-phrases,සමාවත්ත,Excuse me,samāvena,excuseme1_si.mp3
-omniglot-phrases_44294269,omniglot-phrases,කියද?,How much is this?,kiyeda?,howmuch1_si.mp3
-omniglot-phrases_084474aa,omniglot-phrases,කියද මෙක?,How much is this?,kiyeda meka?,howmuch2_si.mp3
-omniglot-phrases_4ee1712c,omniglot-phrases,එකත කමක් න,Reply to thank you,ehkata kamak na,yourewelcome_si.mp3
-omniglot-phrases_7deeeb36,omniglot-phrases,මට පාර වැරදිලා,I'm lost,mata pāra waradilla,imlost1_si.mp3
-omniglot-phrases_7536380e,omniglot-phrases,මම අතරමං වෙලා,I'm lost,mama ataramang wella,imlost2_si.mp3
-omniglot-phrases_1438a816,omniglot-phrases,කරුනකරල මත සනසිල්ලය් ඉන්න දෙන්න,Leave me alone!,karunakarala mata sanasillay inna denna,leavemealone_si.mp3
-omniglot-phrases_f255d3fc,omniglot-phrases,මත උදව් ඕන!,Help!,mata udaw ōna!,help_si.mp3
-omniglot-phrases_9e9e4e77,omniglot-phrases,ගිනි ගන්නව!,Fire!,gini gannawa!,fire_si.mp3
-omniglot-phrases_d33385e7,omniglot-phrases,හලෝ,Hello,halō,
-omniglot-phrases_bff47919,omniglot-phrases,ඡය වේවා!,Cheers! Good Health!,jaya vevā!,
 omniglot-phrases_f6218acc,omniglot-phrases,කරැණාකරල මට ඒක ලියලා දෙන්න පුළුවන්ද,Please write it down,karunākarala mata eka liyala dhenna puluvandha?,
 omniglot-phrases_9f6cb686,omniglot-phrases,ඔබ ඉංග්රිසි කථා කරනවාද,Do you speak English?,oba ingreesi kathaa karanavadha?,
 omniglot-phrases_9003f80f,omniglot-phrases,ඔබ සිංහළ කථා කරනවාද,Do you speak Sinhala?,oba sinhala kathā karanavadha?,
 omniglot-phrases_548066aa,omniglot-phrases,මට එය කියන්න පුළුවන්,"Yes, a little",maṭa eya kiyanna pūl̠ūvan,
 omniglot-phrases_0c52bdc8,omniglot-phrases,... කියන්නේ කොහොමද?,How do you say ... in Sinhala?,... kiyanne kohomadha?,
+omniglot-phrases_91fd6c13,omniglot-phrases,සමාවත්ත,Excuse me,samāvena,excuseme1_si.mp3
 omniglot-phrases_dfba2f74,omniglot-phrases,අචසර,Excuse me,avasara,
+omniglot-phrases_44294269,omniglot-phrases,කියද?,How much is this?,kiyeda?,howmuch1_si.mp3
+omniglot-phrases_084474aa,omniglot-phrases,කියද මෙක?,How much is this?,kiyeda meka?,howmuch2_si.mp3
 omniglot-phrases_4395c37a,omniglot-phrases,මට සමාවෙන්න,Sorry,mata samāvenna,
 omniglot-phrases_1933182c,omniglot-phrases,කණගාටුයි,Sorry,kan'agāṭuuyi,
 omniglot-phrases_b72760b2,omniglot-phrases,කරැණාකරල,Please,karunakarala,
 omniglot-phrases_c90f5f67,omniglot-phrases,ඉස්තුති,Thank you,istuti,
 omniglot-phrases_108f3ad9,omniglot-phrases,බොහොම ස්තුතියි,Thank you,bohoma stutiyi,
+omniglot-phrases_4ee1712c,omniglot-phrases,එකත කමක් න,Reply to thank you,ehkata kamak na,yourewelcome_si.mp3
 omniglot-phrases_3831c496,omniglot-phrases,වැසිකිළිය කොහෙද ථියෙන්නෙ,Where's the toilet / bathroom?,wasikiliya koheda thiyenne?,
 omniglot-phrases_f50a1510,omniglot-phrases,මේ කරුණාවන්ත මහත්මයා හැමදේටම ගෙවයි,This gentleman will pay for everything,me karunawantha mahathmaya hamadetama gewai,
 omniglot-phrases_ffaf3527,omniglot-phrases,මේ කරුණාවන්ත කාන්තාව හැමදේටම ගෙවයි,This lady will pay for everything,me karunawantha kanthawa hamadetama gewai,
@@ -60,7 +55,12 @@ omniglot-phrases_f063e1fa,omniglot-phrases,ඔයා මාත් එක්ක �
 omniglot-phrases_f5f0a2bb,omniglot-phrases,මම  ඔයාට  ආදරෙයි,I love you,mama oyāṭa ādareyi,
 omniglot-phrases_4f7a745e,omniglot-phrases,ඉක්මනින් සනීප වෙන්න,Get well soon,ikmaning sanēpa wenna,
 omniglot-phrases_94bc97b3,omniglot-phrases,ආයුබෝවන්!,Bless you!,Ayubowan,
+omniglot-phrases_7deeeb36,omniglot-phrases,මට පාර වැරදිලා,I'm lost,mata pāra waradilla,imlost1_si.mp3
+omniglot-phrases_7536380e,omniglot-phrases,මම අතරමං වෙලා,I'm lost,mama ataramang wella,imlost2_si.mp3
 omniglot-phrases_a32ddacb,omniglot-phrases,මෙතනින් යන,Go away!,metanin yana!,
+omniglot-phrases_1438a816,omniglot-phrases,කරුනකරල මත සනසිල්ලය් ඉන්න දෙන්න,Leave me alone!,karunakarala mata sanasillay inna denna,leavemealone_si.mp3
+omniglot-phrases_f255d3fc,omniglot-phrases,මත උදව් ඕන!,Help!,mata udaw ōna!,help_si.mp3
+omniglot-phrases_9e9e4e77,omniglot-phrases,ගිනි ගන්නව!,Fire!,gini gannawa!,fire_si.mp3
 omniglot-phrases_6fb1549a,omniglot-phrases,නවතින්න!,Stop!,navatinna!,
 omniglot-phrases_16bd9442,omniglot-phrases,පොලිසිය කතා කරන්න,Call the police!,polisiya katā karanna!,
 omniglot-phrases_dd9f28c3,omniglot-phrases,සුභ නත්තලක්,Christmas greetings,subha natthalak,

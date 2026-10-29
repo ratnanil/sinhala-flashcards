@@ -84,7 +84,7 @@ def main():
         if dst.exists() and not args.force:
             skipped += 1
             continue
-        print(f"  {src.name}", end=" → ", flush=True)
+        print(f"  {dst}", end=" → ", flush=True)
         if enhance(src, dst):
             print("ok")
             ok += 1

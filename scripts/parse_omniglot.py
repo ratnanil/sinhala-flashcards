@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-One-off parser: A_raw/omniglot-phrases/html/omniglot-phrases.html → B_parsed/omniglot-phrases/cards.csv
+Parser: A_raw/omniglot-phrases/html/omniglot-phrases.html → B_parsed/omniglot-phrases/cards.csv
+(The HTML was downloaded once; this script is fully repeatable from the saved file.)
 
 The HTML table has English → Sinhala rows. Each Sinhala cell may contain
 multiple variants (separated by <br /> or newlines), each with optional

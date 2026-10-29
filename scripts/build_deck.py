@@ -74,12 +74,36 @@ def load_fixes(cards_path: Path) -> tuple:
     return blacklist, sinhala_fixes, english_fixes
 
 
+def merge_variants(rows: list[dict]) -> list[dict]:
+    """Group rows by s1, merging sinhala/romanized variants and spreading audio across audio/audio2."""
+    seen: dict[str, dict] = {}
+    order: list[str] = []
+    for row in rows:
+        key = row['s1']
+        if key not in seen:
+            merged = dict(row)
+            merged['audio2'] = ''
+            seen[key] = merged
+            order.append(key)
+        else:
+            m = seen[key]
+            if row['s2'] and row['s2'] not in m['s2'].split(' / '):
+                m['s2'] += ' / ' + row['s2']
+            if row['s3'] and row['s3'] not in m['s3'].split(' / '):
+                m['s3'] += ' / ' + row['s3']
+            # s4 (english) is the same for all variants — no merging needed
+            if row['audio'] and not m['audio2'] and row['audio'] != m['audio']:
+                m['audio2'] = row['audio']
+    return [seen[k] for k in order]
+
+
 def main():
     parser = argparse.ArgumentParser(description='Build Flashcard Deluxe import file')
     parser.add_argument('--source',   required=True,    help='Path to cards CSV')
     parser.add_argument('--side1',    default='english', help='CSV column for side 1 (default: english)')
     parser.add_argument('--side2',    default='sinhala', help='CSV column for side 2 (default: sinhala)')
     parser.add_argument('--side3',    default='',        help='CSV column for side 3, e.g. romanized (default: none)')
+    parser.add_argument('--side4',    default='',        help='CSV column for side 4, e.g. english (default: none)')
     parser.add_argument('--audio',    default='audio_file', help='CSV column for audio filename (default: audio_file)')
     parser.add_argument('--category', default='category',   help='CSV column for category (default: category)')
     parser.add_argument('--out',      default=None,         help='Output file (default: D_output/<source_dir>.txt)')
@@ -89,6 +113,8 @@ def main():
                         help='Only include cards where source_deck matches this value')
     parser.add_argument('--translations', default=None,
                         help='ID→DE join table CSV (default: C_enriched/<source>/translations/translations.csv)')
+    parser.add_argument('--merge-variants', action='store_true',
+                        help='Merge cards with the same side-1 text: join sinhala/romanized with " / ", spread audio across Sound 2+3')
     args = parser.parse_args()
 
     source      = Path(args.source)
@@ -125,6 +151,7 @@ def main():
     has_category = False
     has_image    = False
     has_side3    = False
+    has_side4    = False
 
     with open(source, newline='', encoding='utf-8') as f:
         for row in csv.DictReader(f):
@@ -168,9 +195,10 @@ def main():
             audio_de = get_tts_filename(tts_audio_dir, card_id, 'de')
 
             s3 = row.get(args.side3, '').strip() if args.side3 else ''
+            s4 = row.get(args.side4, '').strip() if args.side4 else ''
 
-            rows.append({'s1': s1, 's2': s2, 's3': s3, 'audio': audio, 'audio_de': audio_de,
-                         'category': cat, 'image': img})
+            rows.append({'s1': s1, 's2': s2, 's3': s3, 's4': s4, 'audio': audio, 'audio2': '',
+                         'audio_de': audio_de, 'category': cat, 'image': img})
             enriched_rows.append({
                 'id':          card_id,
                 'source_deck': row.get('source_deck', ''),
@@ -187,13 +215,21 @@ def main():
             if cat:      has_category = True
             if img:      has_image    = True
             if s3:       has_side3    = True
+            if s4:       has_side4    = True
+
+    if args.merge_variants:
+        rows = merge_variants(rows)
+
+    has_audio2 = any(r['audio2'] for r in rows)
 
     # Build header
     header = ['Text 1', 'Text 2']
     if has_side3:    header.append('Text 3')
+    if has_side4:    header.append('Text 4')
     if has_image:    header.append('Picture 1')
     if has_audio_de: header.append('Sound 1')
     if has_audio:    header.append('Sound 2')
+    if has_audio2:   header.append('Sound 3')
     if has_category: header.append('Category 1')
 
     with open(out_path, 'w', encoding='utf-8') as f:
@@ -201,9 +237,11 @@ def main():
         for row in rows:
             cols = [row['s1'], row['s2']]
             if has_side3:    cols.append(row['s3'])
+            if has_side4:    cols.append(row['s4'])
             if has_image:    cols.append(row['image'])
             if has_audio_de: cols.append(row['audio_de'])
             if has_audio:    cols.append(row['audio'])
+            if has_audio2:   cols.append(row['audio2'])
             if has_category: cols.append(row['category'])
             f.write('\t'.join(cols) + '\n')
 
@@ -215,20 +253,22 @@ def main():
 
     # Copy audio files into "<deck name> Media/" alongside the .txt
     # This matches the Dropbox/Google Drive folder convention Flashcard Deluxe expects.
-    if has_audio:
+    if has_audio or has_audio2:
         audio_dst = out_path.parent / f'{out_path.stem} Media'
         audio_dst.mkdir(exist_ok=True)
         copied = skipped = 0
         for row in rows:
-            if not row['audio']:
-                continue
-            src = audio_map.get(row['audio'])
-            if src:
-                shutil.copy2(src, audio_dst / row['audio'])
-                copied += 1
-            else:
-                print(f'  WARNING: audio file not found: {row["audio"]}')
-                skipped += 1
+            for key in ('audio', 'audio2'):
+                fname = row.get(key, '')
+                if not fname:
+                    continue
+                src = audio_map.get(fname)
+                if src:
+                    shutil.copy2(src, audio_dst / fname)
+                    copied += 1
+                else:
+                    print(f'  WARNING: audio file not found: {fname}')
+                    skipped += 1
         print(f'  audio: {copied} files → {audio_dst}/' +
               (f' ({skipped} missing)' if skipped else ''))
 

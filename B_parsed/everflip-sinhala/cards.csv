@@ -1,0 +1,99 @@
+id,source_deck,sinhala,english,romanized,audio_file,category
+everflip-sinhala_b784293a,everflip-sinhala,රතු,red,ratu,,colors
+everflip-sinhala_88f5c75d,everflip-sinhala,නිල්,blue,nil,,colors
+everflip-sinhala_049ea8ed,everflip-sinhala,කොළ,green,koḷa,,colors
+everflip-sinhala_98d8301d,everflip-sinhala,කහ,yellow,kaha,,colors
+everflip-sinhala_5bc6f011,everflip-sinhala,කළු,black,kaḷu,,colors
+everflip-sinhala_b73c54e4,everflip-sinhala,සුදු,white,sudu,,colors
+everflip-sinhala_6dd39305,everflip-sinhala,තැඹිලි,orange,tæmbili,,colors
+everflip-sinhala_33c17918,everflip-sinhala,දම්,purple,dam,,colors
+everflip-sinhala_5e9e8fe3,everflip-sinhala,රෝස,pink,rōsa,,colors
+everflip-sinhala_0553f965,everflip-sinhala,දුඹුරු,brown,dumburu,,colors
+everflip-sinhala_5e6bbc4c,everflip-sinhala,අළු,grey,aḷu,,colors
+everflip-sinhala_a38cb7b2,everflip-sinhala,රන්වන්,gold / golden,ranwan,,colors
+everflip-sinhala_f9e6a82f,everflip-sinhala,සඳුදා,Monday,saňdudā,,days
+everflip-sinhala_c5e10a12,everflip-sinhala,අඟහරුවාදා,Tuesday,aňgaharuwādā,,days
+everflip-sinhala_6c725bb2,everflip-sinhala,බදාදා,Wednesday,badādā,,days
+everflip-sinhala_dd7940ab,everflip-sinhala,බ්‍රහස්පතින්දා,Thursday,brahaspatindā,,days
+everflip-sinhala_ffe708d2,everflip-sinhala,සිකුරාදා,Friday,sikurādā,,days
+everflip-sinhala_b61a2258,everflip-sinhala,සෙනසුරාදා,Saturday,senasurādā,,days
+everflip-sinhala_53858b62,everflip-sinhala,ඉරිදා,Sunday,iridā,,days
+everflip-sinhala_12330f1c,everflip-sinhala,අද,today,ada,,days
+everflip-sinhala_544c5cbd,everflip-sinhala,හෙට,tomorrow,heṭa,,days
+everflip-sinhala_74ece207,everflip-sinhala,ඊයේ,yesterday,īyē,,days
+everflip-sinhala_2fcd8277,everflip-sinhala,සතිය,week,satiya,,days
+everflip-sinhala_8542ce65,everflip-sinhala,අම්මා,mother,ammā,,family
+everflip-sinhala_349f2d76,everflip-sinhala,තාත්තා,father,tāttā,,family
+everflip-sinhala_32b4c2f0,everflip-sinhala,දෙමව්පියෝ,parents,demawpiyō,,family
+everflip-sinhala_c5786680,everflip-sinhala,අක්කා / නංගී,sister,akkā = older sister,,family
+everflip-sinhala_d7054c18,everflip-sinhala,අයියා / මල්ලී,brother,ayiyā = older brother,,family
+everflip-sinhala_3e9c5c0e,everflip-sinhala,පුතා,son,putā,,family
+everflip-sinhala_311c6784,everflip-sinhala,දුව,daughter,duwa,,family
+everflip-sinhala_9d242d20,everflip-sinhala,ළමයා,child,ḷamayā,,family
+everflip-sinhala_281c89d7,everflip-sinhala,බිරිඳ,wife,biriňda,,family
+everflip-sinhala_857962d7,everflip-sinhala,සැමියා,husband,sæmiyā,,family
+everflip-sinhala_85ab4a2f,everflip-sinhala,ආච්චි,grandmother,ācci,,family
+everflip-sinhala_37b78151,everflip-sinhala,සීයා,grandfather,sīyā,,family
+everflip-sinhala_3248f1a5,everflip-sinhala,ආයුබෝවන්,Hello / Goodbye,āyubōwan,,greetings
+everflip-sinhala_d33385e7,everflip-sinhala,හලෝ,Hello,halō,,greetings
+everflip-sinhala_b57cc54f,everflip-sinhala,සුබ උදෑසනක්,Good morning,suba udǣsanak,,greetings
+everflip-sinhala_6c9e0853,everflip-sinhala,කොහොමද?,How are you?,kohomada?,,greetings
+everflip-sinhala_e52bd5f0,everflip-sinhala,කොහොමද ඉන්නේ?,How are you doing?,kohomada innē?,,greetings
+everflip-sinhala_eea4a829,everflip-sinhala,හොඳින් ඉන්නවා,I'm fine / doing well,hoňdin innawā,,greetings
+everflip-sinhala_819d3682,everflip-sinhala,ඔයාට කොහොමද?,And you? / How about you?,oyāṭa kohomada?,,greetings
+everflip-sinhala_af29911d,everflip-sinhala,පස්සේ හම්බවෙමු,See you later,passē hambawemu,,greetings
+everflip-sinhala_8af7a8c8,everflip-sinhala,සුබ රාත්‍රියක්,Good night,suba rātriyak,,greetings
+everflip-sinhala_beb5b119,everflip-sinhala,සාදරයෙන් පිළිගනිමු,Welcome,sādarayen piḷiganimu,,greetings
+everflip-sinhala_6b18c7e6,everflip-sinhala,මට යන්න වෙනවා,I have to go,maṭa yanna wenawā,,greetings
+everflip-sinhala_2eb9af9c,everflip-sinhala,වතුර,water,watura,,nouns
+everflip-sinhala_bdb9f45a,everflip-sinhala,කෑම,food,kǣma,,nouns
+everflip-sinhala_3f21c37b,everflip-sinhala,ගෙදර,house / home,gedara,,nouns
+everflip-sinhala_bf8253d7,everflip-sinhala,පොත,book,pota,,nouns
+everflip-sinhala_d87aa4fe,everflip-sinhala,කාර් එක,car,kār eka,,nouns
+everflip-sinhala_0bf7f365,everflip-sinhala,මිනිහා,man,minihā,,nouns
+everflip-sinhala_aad9d004,everflip-sinhala,ගෑනි,woman,gǣni,,nouns
+everflip-sinhala_eb161d10,everflip-sinhala,බල්ලා,dog,ballā,,nouns
+everflip-sinhala_df4544da,everflip-sinhala,පූසා,cat,pūsā,,nouns
+everflip-sinhala_f78b5804,everflip-sinhala,කඩේ,shop / store,kaḍē,,nouns
+everflip-sinhala_861384a5,everflip-sinhala,පාර,road / street,pāra,,nouns
+everflip-sinhala_8d16b659,everflip-sinhala,නගරය,city / town,nagaraya,,nouns
+everflip-sinhala_a7de395d,everflip-sinhala,අත,hand,ata,,nouns
+everflip-sinhala_9ddaa983,everflip-sinhala,නම,name,nama,,nouns
+everflip-sinhala_b1fb08b7,everflip-sinhala,බින්දුව,zero,binduwa,,numbers
+everflip-sinhala_1f36fcba,everflip-sinhala,එක,one,eka,,numbers
+everflip-sinhala_290e23bd,everflip-sinhala,දෙක,two,deka,,numbers
+everflip-sinhala_8c905199,everflip-sinhala,තුන,three,tuna,,numbers
+everflip-sinhala_112638c9,everflip-sinhala,හතර,four,hatara,,numbers
+everflip-sinhala_d8ae3981,everflip-sinhala,පහ,five,paha,,numbers
+everflip-sinhala_7b1c3ced,everflip-sinhala,හය,six,haya,,numbers
+everflip-sinhala_6ab9d9c1,everflip-sinhala,හත,seven,hata,,numbers
+everflip-sinhala_76b14bb5,everflip-sinhala,අට,eight,aṭa,,numbers
+everflip-sinhala_da4b41bd,everflip-sinhala,නවය,nine,nawaya,,numbers
+everflip-sinhala_bfcb2101,everflip-sinhala,දහය,ten,dahaya,,numbers
+everflip-sinhala_747a8ab1,everflip-sinhala,විස්ස,twenty,vissa,,numbers
+everflip-sinhala_64e6fd3b,everflip-sinhala,පනහ,fifty,panaha,,numbers
+everflip-sinhala_033a3cef,everflip-sinhala,සියය,hundred,siyaya,,numbers
+everflip-sinhala_ae1c3bb4,everflip-sinhala,දහස,thousand,dahasa,,numbers
+everflip-sinhala_816d8a5d,everflip-sinhala,ස්තූතියි,Thank you,stūtiyi,,politeness
+everflip-sinhala_96399483,everflip-sinhala,බොහොම ස්තූතියි,Thank you very much,bohoma stūtiyi,,politeness
+everflip-sinhala_f81568ad,everflip-sinhala,සමාවෙන්න,Sorry / Excuse me,samāwenna,,politeness
+everflip-sinhala_bb7900f7,everflip-sinhala,කමක් නෑ,It's okay / No problem,kamak nǣ,,politeness
+everflip-sinhala_0712c5d9,everflip-sinhala,කරුණාකරලා,Please,karuṇākaralā,,politeness
+everflip-sinhala_ebcf1b5a,everflip-sinhala,ඔව්,Yes,ow,,politeness
+everflip-sinhala_6e4bc52c,everflip-sinhala,නෑ,No,nǣ,,politeness
+everflip-sinhala_994dade1,everflip-sinhala,හරි,Okay / Alright,hari,,politeness
+everflip-sinhala_e6130c74,everflip-sinhala,පින් සිද්ද වෙන්න,"Please / Kindly (pin sidda wenna; warm, polite way of asking a favor)",,,politeness
+everflip-sinhala_53e09621,everflip-sinhala,සුබ පැතුම්,Best wishes / Congratulations,suba pætum,,politeness
+everflip-sinhala_9a014a6c,everflip-sinhala,අවසර,Excuse me / May I,awasara,,politeness
+everflip-sinhala_5142e5f2,everflip-sinhala,මට අමතක වුණා,I forgot,maṭa amataka wuṇā,,politeness
+everflip-sinhala_8e024cf5,everflip-sinhala,මොකක්ද?,What?,mokakda?,,questions
+everflip-sinhala_c45330ce,everflip-sinhala,කවුද?,Who?,kawuda?,,questions
+everflip-sinhala_cc1460dc,everflip-sinhala,කොහෙද?,Where?,koheda?,,questions
+everflip-sinhala_e504d93a,everflip-sinhala,කවදද?,When?,kawadada?,,questions
+everflip-sinhala_fa874814,everflip-sinhala,ඇයි?,Why?,æyi?,,questions
+everflip-sinhala_0d6cc8e5,everflip-sinhala,කීයද?,How much? / What price?,kīyada?,,questions
+everflip-sinhala_35ff8881,everflip-sinhala,කොච්චරද?,How much / how many?,koccarada?,,questions
+everflip-sinhala_5601da9c,everflip-sinhala,ඔයාගේ නම මොකද්ද?,What's your name?,oyāgē nama mokadda?,,questions
+everflip-sinhala_e983b9c2,everflip-sinhala,ඔයාගේ නම මොකක්ද?,What is your name?,oyāgē nama mokakda?,,questions
+everflip-sinhala_43cd3de3,everflip-sinhala,මේක මොකක්ද?,What is this?,mēka mokakda?,,questions
+everflip-sinhala_ee0da981,everflip-sinhala,කීයටද?,At what time?,kīyaṭada?,,questions

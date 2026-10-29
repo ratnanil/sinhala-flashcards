@@ -16,6 +16,7 @@ Usage:
 
 import csv
 import hashlib
+import re
 from pathlib import Path
 
 from bs4 import BeautifulSoup
@@ -23,7 +24,7 @@ from bs4 import BeautifulSoup
 HTML_DIR   = Path('A_raw/ilovelanguages/html')
 AUDIO_DIR  = Path('A_raw/ilovelanguages/audio')
 OUT_CSV    = Path('B_parsed/ilovelanguages/cards.csv')
-FIELDNAMES = ['id', 'source_deck', 'sinhala', 'english', 'romanized', 'audio_file']
+FIELDNAMES = ['id', 'source_deck', 'sinhala', 'english', 'romanized', 'audio_file', 'category']
 FIX_FIELDS = ['type', 'key', 'value', 'replacement', 'note']
 
 
@@ -50,6 +51,8 @@ def parse_lessons() -> list[dict]:
     rows = []
 
     for html_file in sorted(HTML_DIR.glob('Sinhala Lesson*.html')):
+        m = re.search(r'Lesson \d+[_:]\s*(.+?)\s*_\s*I Love Languages', html_file.name)
+        category = m.group(1) if m else ''
         soup = BeautifulSoup(html_file.read_text(encoding='utf-8'), 'html.parser')
         for table in soup.find_all('table', id=lambda x: x and x.startswith('lesson-table-')):
             for tr in table.find('tbody').find_all('tr'):
@@ -90,6 +93,7 @@ def parse_lessons() -> list[dict]:
                     'sinhala':    sinhala,
                     'romanized':  romanized,
                     'audio_file': audio_file,
+                    'category':   category,
                 })
 
     return rows
@@ -111,6 +115,7 @@ def main():
             'english':     r['english'],
             'romanized':   r['romanized'],
             'audio_file':  r['audio_file'],
+            'category':    r['category'],
         })
 
     OUT_CSV.parent.mkdir(parents=True, exist_ok=True)

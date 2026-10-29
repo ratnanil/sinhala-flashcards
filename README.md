@@ -33,6 +33,7 @@ Every step has a per-deck target and an aggregate that runs all decks:
 # ── A → B: parse ─────────────────────────────────────────────────────────────
 make parse-ankiweb-vocab        # extract .apkg → B_parsed/ankiweb-vocab/cards.csv
 make parse-omniglot-phrases     # parse HTML    → B_parsed/omniglot-phrases/cards.csv
+make parse-ilovelanguages       # parse HTML    → B_parsed/ilovelanguages/cards.csv
 make parse-everflip-sinhala     # extract 8 .apkg files → B_parsed/everflip-sinhala/cards.csv
                                 # ↳ curate B_parsed/<deck>/cards.csv and A_raw/<deck>/fixes.csv by hand
 
@@ -42,7 +43,7 @@ make enrich-enhance-<deck>      # ffmpeg: highpass + noise reduction + loudnorm
 make enrich-romanize-<deck>     # IAST transliteration → B_parsed/<deck>/cards.csv (romanized col)
 make enrich-translate-<deck>    # EN→DE via DeepL      → C_enriched/<deck>/translations/translations.csv
 make enrich-tts-<deck>          # German TTS           → C_enriched/<deck>/audio/<card_id>_de.mp3
-make enrich-images-<deck>       # emoji PNGs via Ollama → C_enriched/<deck>/images/<card_id>.png
+# make enrich-images-<deck>       # emoji PNGs via Ollama → C_enriched/<deck>/images/<card_id>.png CURRENTLY NOT IN USE
 
 # ── C → D: build ─────────────────────────────────────────────────────────────
 make deck-ankiweb-vocab         # → D_output/Deutsch Sinhala.txt + Media/
@@ -243,8 +244,14 @@ make enrich-translate-ankiweb-vocab          # single deck
 python scripts/generate_translations.py --force   # retranslate everything
 ```
 
-Uses DeepL API (`DEEPL_API_KEY` env var). Verbs sent as "to X" → infinitive; nouns sent as
-"the X" → article + noun. ~0.2 s per word. Free tier (500k chars/month) is sufficient.
+Uses DeepL API. Set the key before running:
+
+```bash
+export DEEPL_API_KEY=your-key-here   # free keys end with :fx
+```
+
+Verbs sent as "to X" → infinitive; nouns sent as "the X" → article + noun.
+~0.2 s per word. Free tier (500k chars/month) is sufficient.
 
 ## Directory structure
 
@@ -354,5 +361,6 @@ Source: `A_raw/omniglot-phrases/html/omniglot-phrases.html` — the Omniglot "Us
 
 **Source URL:** https://www.omniglot.com/language/phrases/sinhala.htm (saved manually).
 
-Parsed via `scripts/parse_omniglot.py` (one-off, not in the automated pipeline) into
+Parsed via `scripts/parse_omniglot.py` (`make parse-omniglot-phrases`) into
 `B_parsed/omniglot-phrases/cards.csv` → `D_output/Omniglot Phrasen.txt` + Media/.
+The HTML was downloaded once; the parser runs from the saved file and is fully repeatable.
