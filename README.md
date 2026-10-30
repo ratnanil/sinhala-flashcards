@@ -394,6 +394,7 @@ This script does not yet exist; see TODO item in *Current state & next steps*.
 3. Implement `scripts/import_stats.py` to preserve FD learning statistics across deck rebuilds (match by `Extra Info` card ID; see *Flashcard Deluxe statistics format* section above)
 4. Add `make deploy-adb` target to push decks directly to `Android/data/.../files/Import Export/` via ADB (USB or WiFi); on Pixel 8 use `adb tcpip 5555` once over USB then deploy wirelessly
 5. Once `deploy-adb` is working, remove `deploy-syncthing` — Syncthing can't write to the FD import folder so the target is not useful for importing
+6. Romanization (Text 3): either add a reading guide explaining IAST diacritics to German speakers (e.g. "ā = langes a", "ṭ = retroflexes t"), or simplify the scheme to plain ASCII so no explanation is needed
 
 ### ✓ Done: Pseudo-phonetics (romanized Sinhala)
 
