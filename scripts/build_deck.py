@@ -97,6 +97,88 @@ def merge_variants(rows: list[dict]) -> list[dict]:
     return [seen[k] for k in order]
 
 
+def write_deck(rows: list[dict], out_path: Path, audio_map: dict,
+               tts_audio_dir: Path, images_dir: Path) -> None:
+    """Write one Flashcard Deluxe .txt and copy its media files."""
+    has_audio    = any(r['audio']    for r in rows)
+    has_audio2   = any(r['audio2']   for r in rows)
+    has_audio_de = any(r['audio_de'] for r in rows)
+    has_image    = any(r['image']    for r in rows)
+    has_side3    = any(r['s3']       for r in rows)
+    has_side4    = any(r['s4']       for r in rows)
+    has_category = any(r['category'] for r in rows)
+
+    header = ['Text 1', 'Text 2']
+    if has_side3:    header.append('Text 3')
+    if has_side4:    header.append('Text 4')
+    if has_image:    header.append('Picture 1')
+    if has_audio_de: header.append('Sound 1')
+    if has_audio:    header.append('Sound 2')
+    if has_audio2:   header.append('Sound 3')
+    if has_category: header.append('Category 1')
+    header.append('Extra Info')
+
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(out_path, 'w', encoding='utf-8') as f:
+        f.write('\t'.join(header) + '\n')
+        for row in rows:
+            cols = [row['s1'], row['s2']]
+            if has_side3:    cols.append(row['s3'])
+            if has_side4:    cols.append(row['s4'])
+            if has_image:    cols.append(row['image'])
+            if has_audio_de: cols.append(row['audio_de'])
+            if has_audio:    cols.append(row['audio'])
+            if has_audio2:   cols.append(row['audio2'])
+            if has_category: cols.append(row['category'])
+            cols.append(row['id'])
+            f.write('\t'.join(cols) + '\n')
+    print(f'{len(rows)} cards → {out_path}')
+    print(f'  columns: {", ".join(header)}')
+
+    media_dst = out_path.parent / f'{out_path.stem} Media'
+    if has_audio or has_audio2:
+        media_dst.mkdir(exist_ok=True)
+        copied = skipped = 0
+        for row in rows:
+            for key in ('audio', 'audio2'):
+                fname = row.get(key, '')
+                if not fname:
+                    continue
+                src = audio_map.get(fname)
+                if src:
+                    shutil.copy2(src, media_dst / fname)
+                    copied += 1
+                else:
+                    print(f'  WARNING: audio file not found: {fname}')
+                    skipped += 1
+        print(f'  audio: {copied} files → {media_dst}/' +
+              (f' ({skipped} missing)' if skipped else ''))
+    if has_audio_de:
+        media_dst.mkdir(exist_ok=True)
+        copied = skipped = 0
+        for row in rows:
+            if not row['audio_de']:
+                continue
+            src = tts_audio_dir / row['audio_de']
+            if src.exists():
+                shutil.copy2(src, media_dst / row['audio_de'])
+                copied += 1
+            else:
+                print(f'  WARNING: German audio missing: {src}')
+                skipped += 1
+        print(f'  German audio: {copied} files → {media_dst}/' +
+              (f' ({skipped} missing)' if skipped else ''))
+    if has_image:
+        media_dst.mkdir(exist_ok=True)
+        copied = 0
+        for row in rows:
+            if not row['image']:
+                continue
+            shutil.copy2(images_dir / row['image'], media_dst / row['image'])
+            copied += 1
+        print(f'  images: {copied} files → {media_dst}/')
+
+
 def main():
     parser = argparse.ArgumentParser(description='Build Flashcard Deluxe import file')
     parser.add_argument('--source',   required=True,    help='Path to cards CSV')
@@ -115,6 +197,10 @@ def main():
                         help='ID→DE join table CSV (default: C_enriched/<source>/translations/translations.csv)')
     parser.add_argument('--merge-variants', action='store_true',
                         help='Merge cards with the same side-1 text: join sinhala/romanized with " / ", spread audio across Sound 2+3')
+    parser.add_argument('--require-audio', action='store_true',
+                        help='Skip cards with no Sinhala audio file')
+    parser.add_argument('--split-by-category', action='store_true',
+                        help='Write one output file per category (filename: <out-stem>-<category>.txt)')
     args = parser.parse_args()
 
     source      = Path(args.source)
@@ -186,6 +272,8 @@ def main():
             if not s1 or not s2:
                 print(f'  SKIP (empty side): {row}')
                 continue
+            if args.require_audio and not audio:
+                continue
 
             # Look for a pre-generated image keyed by card ID
             img_file = images_dir / f'{card_id}.png'
@@ -217,92 +305,19 @@ def main():
             if s3:       has_side3    = True
             if s4:       has_side4    = True
 
-    if args.merge_variants:
-        rows = merge_variants(rows)
-
-    has_audio2 = any(r['audio2'] for r in rows)
-
-    # Build header
-    header = ['Text 1', 'Text 2']
-    if has_side3:    header.append('Text 3')
-    if has_side4:    header.append('Text 4')
-    if has_image:    header.append('Picture 1')
-    if has_audio_de: header.append('Sound 1')
-    if has_audio:    header.append('Sound 2')
-    if has_audio2:   header.append('Sound 3')
-    if has_category: header.append('Category 1')
-
-    with open(out_path, 'w', encoding='utf-8') as f:
-        f.write('\t'.join(header) + '\n')
+    if args.split_by_category:
+        cats: dict[str, list] = {}
         for row in rows:
-            cols = [row['s1'], row['s2']]
-            if has_side3:    cols.append(row['s3'])
-            if has_side4:    cols.append(row['s4'])
-            if has_image:    cols.append(row['image'])
-            if has_audio_de: cols.append(row['audio_de'])
-            if has_audio:    cols.append(row['audio'])
-            if has_audio2:   cols.append(row['audio2'])
-            if has_category: cols.append(row['category'])
-            f.write('\t'.join(cols) + '\n')
-
-    print(f'{len(rows)} cards → {out_path}')
-    print(f'  columns: {", ".join(header)}')
-    if has_image:
-        img_count = sum(1 for r in rows if r['image'])
-        print(f'  images: {img_count}/{len(rows)} cards have an image')
-
-    # Copy audio files into "<deck name> Media/" alongside the .txt
-    # This matches the Dropbox/Google Drive folder convention Flashcard Deluxe expects.
-    if has_audio or has_audio2:
-        audio_dst = out_path.parent / f'{out_path.stem} Media'
-        audio_dst.mkdir(exist_ok=True)
-        copied = skipped = 0
-        for row in rows:
-            for key in ('audio', 'audio2'):
-                fname = row.get(key, '')
-                if not fname:
-                    continue
-                src = audio_map.get(fname)
-                if src:
-                    shutil.copy2(src, audio_dst / fname)
-                    copied += 1
-                else:
-                    print(f'  WARNING: audio file not found: {fname}')
-                    skipped += 1
-        print(f'  audio: {copied} files → {audio_dst}/' +
-              (f' ({skipped} missing)' if skipped else ''))
-
-    # Copy German TTS audio into the Media folder
-    if has_audio_de:
-        audio_src = tts_audio_dir
-        media_dst = out_path.parent / f'{out_path.stem} Media'
-        media_dst.mkdir(exist_ok=True)
-        copied = skipped = 0
-        for row in rows:
-            if not row['audio_de']:
-                continue
-            src = audio_src / row['audio_de']
-            if src.exists():
-                shutil.copy2(src, media_dst / row['audio_de'])
-                copied += 1
-            else:
-                print(f'  WARNING: German audio missing: {src}')
-                skipped += 1
-        print(f'  German audio: {copied} files → {media_dst}/' +
-              (f' ({skipped} missing)' if skipped else ''))
-
-    # Copy emoji images into the Media folder
-    if has_image:
-        media_dst = out_path.parent / f'{out_path.stem} Media'
-        media_dst.mkdir(exist_ok=True)
-        copied = 0
-        for row in rows:
-            if not row['image']:
-                continue
-            src = images_dir / row['image']
-            shutil.copy2(src, media_dst / row['image'])
-            copied += 1
-        print(f'  images: {copied} files → {media_dst}/')
+            cats.setdefault(row['category'], []).append(row)
+        for cat, cat_rows in cats.items():
+            if args.merge_variants:
+                cat_rows = merge_variants(cat_rows)
+            cat_out = out_path.parent / f'{out_path.stem}-{sanitize(cat)}.txt'
+            write_deck(cat_rows, cat_out, audio_map, tts_audio_dir, images_dir)
+    else:
+        if args.merge_variants:
+            rows = merge_variants(rows)
+        write_deck(rows, out_path, audio_map, tts_audio_dir, images_dir)
 
     # Write enriched snapshot — one merged CSV per source showing the deck at this stage
     enriched_csv = enriched / 'cards.csv'

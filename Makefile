@@ -29,9 +29,10 @@ DECK_DEPS  := scripts/build_deck.py
 REMOTE     := Dropbox:Flashcards Deluxe
 
 .PHONY: all parse enrich-enhance enrich-romanize enrich-translate enrich-images enrich-tts \
-        deck deploy clean-generated help \
-        deck-ankiweb-vocab deck-omniglot-phrases \
-        deploy-ankiweb-vocab deploy-omniglot-phrases \
+        deck deploy-dropbox deploy-syncthing clean-generated help \
+        deck-ankiweb-vocab deck-omniglot-phrases deck-ilovelanguages deck-everflip-sinhala \
+        deploy-dropbox-ankiweb-vocab deploy-dropbox-omniglot-phrases \
+        deploy-dropbox-ilovelanguages deploy-dropbox-everflip-sinhala \
         parse-everflip-sinhala parse-omniglot-phrases parse-ilovelanguages
 
 all: deck
@@ -96,31 +97,54 @@ enrich-tts-%:
 
 # ── C → D ──────────────────────────────────────────────────────────────────
 
-deck: deck-ankiweb-vocab deck-omniglot-phrases
+deck: deck-ankiweb-vocab deck-omniglot-phrases deck-ilovelanguages deck-everflip-sinhala
 
 deck-ankiweb-vocab: $(DECK_DEPS)
 	$(PYTHON) scripts/build_deck.py \
 		--source B_parsed/ankiweb-vocab/cards.csv \
 		--side1 german --side3 romanized --side4 english --merge-variants \
-		--out "D_output/Deutsch Sinhala.txt"
+		--out "D_output/ankiweb-vocab.txt"
 
 deck-omniglot-phrases: $(DECK_DEPS)
 	$(PYTHON) scripts/build_deck.py \
 		--source B_parsed/omniglot-phrases/cards.csv \
 		--side1 german --side3 romanized --side4 english --merge-variants \
-		--out "D_output/Omniglot Phrasen.txt"
+		--out "D_output/omniglot-phrases.txt"
+
+deck-ilovelanguages: $(DECK_DEPS)
+	$(PYTHON) scripts/build_deck.py \
+		--source B_parsed/ilovelanguages/cards.csv \
+		--side1 german --side3 romanized --side4 english --merge-variants --require-audio --split-by-category \
+		--out "D_output/ilovelanguages.txt"
+
+deck-everflip-sinhala: $(DECK_DEPS)
+	$(PYTHON) scripts/build_deck.py \
+		--source B_parsed/everflip-sinhala/cards.csv \
+		--side1 german --side3 romanized --side4 english --merge-variants \
+		--out "D_output/everflip-sinhala.txt"
 
 # ── Deploy ─────────────────────────────────────────────────────────────────
 
-deploy: deploy-ankiweb-vocab deploy-omniglot-phrases
+deploy-dropbox: deploy-dropbox-ankiweb-vocab deploy-dropbox-omniglot-phrases deploy-dropbox-ilovelanguages deploy-dropbox-everflip-sinhala
 
-deploy-ankiweb-vocab:
-	rclone copyto "D_output/Deutsch Sinhala.txt" "$(REMOTE)/Deutsch Sinhala.txt" --ignore-times --progress
-	rclone sync "D_output/Deutsch Sinhala Media/" "$(REMOTE)/Deutsch Sinhala Media/" --progress
+deploy-dropbox-ankiweb-vocab:
+	rclone copyto "D_output/ankiweb-vocab.txt" "$(REMOTE)/ankiweb-vocab.txt" --ignore-times --progress
+	rclone sync "D_output/ankiweb-vocab Media/" "$(REMOTE)/ankiweb-vocab Media/" --progress
 
-deploy-omniglot-phrases:
-	rclone copyto "D_output/Omniglot Phrasen.txt" "$(REMOTE)/Omniglot Phrasen.txt" --ignore-times --progress
-	rclone sync "D_output/Omniglot Phrasen Media/" "$(REMOTE)/Omniglot Phrasen Media/" --progress
+deploy-dropbox-omniglot-phrases:
+	rclone copyto "D_output/omniglot-phrases.txt" "$(REMOTE)/omniglot-phrases.txt" --ignore-times --progress
+	rclone sync "D_output/omniglot-phrases Media/" "$(REMOTE)/omniglot-phrases Media/" --progress
+
+deploy-dropbox-ilovelanguages:
+	rclone copyto "D_output/ilovelanguages.txt" "$(REMOTE)/ilovelanguages.txt" --ignore-times --progress
+	rclone sync "D_output/ilovelanguages Media/" "$(REMOTE)/ilovelanguages Media/" --progress
+
+deploy-dropbox-everflip-sinhala:
+	rclone copyto "D_output/everflip-sinhala.txt" "$(REMOTE)/everflip-sinhala.txt" --ignore-times --progress
+	rclone sync "D_output/everflip-sinhala Media/" "$(REMOTE)/everflip-sinhala Media/" --progress
+
+deploy-syncthing:
+	rsync -av --delete D_output/ ~/Syncthing/Flashcard-Deluxe/
 
 # ── Utilities ──────────────────────────────────────────────────────────────
 

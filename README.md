@@ -50,8 +50,9 @@ make deck-ankiweb-vocab         # → D_output/Deutsch Sinhala.txt + Media/
 make deck-omniglot-phrases      # → D_output/Omniglot Phrasen.txt + Media/
 
 # ── deploy ───────────────────────────────────────────────────────────────────
-make deploy-ankiweb-vocab       # rclone → Dropbox/Flashcards Deluxe/
-make deploy-omniglot-phrases
+make deploy-dropbox             # rclone → Dropbox/Flashcards Deluxe/ (all decks)
+make deploy-dropbox-ankiweb-vocab   # rclone → Dropbox (single deck)
+make deploy-syncthing           # rsync → ~/Syncthing/Flashcard-Deluxe/ (all decks)
 ```
 
 Aggregate targets (`make parse`, `make enrich-translate`, `make deck`, …) run all decks at once.
@@ -112,6 +113,25 @@ Place files in the `Flashcards Deluxe` folder in Dropbox. Media files go in a su
 `<deck name> Media` at the same level (e.g. deck `Sinhala Vocab.txt` → media folder
 `Sinhala Vocab Media/`). In the app: `+` → Dropbox.
 
+**Shared media folder (override default media path)**
+
+If multiple decks share the same media files, you can point them all at a single folder instead
+of duplicating files. Add a `media-dir` header row at the top of the deck `.txt` (before the
+column header row):
+
+```
+*	media-dir	MainMedia
+Text 1	Text 2
+question 1	answer 1
+```
+
+FD will then look for media in `Flashcards Deluxe/MainMedia/` instead of the default
+`Flashcards Deluxe/<deck name> Media/`. Works for Dropbox and Google Drive.
+
+> **Note:** this may only take effect when adding a deck as new. Updating an existing deck
+> may not update its media-dir setting — re-add as a new deck if media is not found.
+> Source: [OrangeOrApple forum](https://orangeorapple.com/forum/viewtopic.php?f=2&t=4650&p=12638)
+
 **Note: use Full Dropbox access**
 
 In Flashcard Deluxe's Dropbox settings, choose **Full Dropbox** (not App folder). With App folder
@@ -137,10 +157,26 @@ In the app: `+` → Google Drive.
 Paste text into the upload box, set a Deck Code. For media: also upload a zip via
 "Upload Pictures / Sounds". In the app: `+` → Private Deck → enter Deck Code.
 
-**USB**
+**Local storage (Android)**
 
-Text-only. Copy `.txt` to `\Android\data\com.orangeorapple.flashcards\files\` (Android) or
-via iTunes File Sharing (iOS). In the app: `+`.
+FD reads from a fixed path — `Android/data/com.orangeorapple.flashcards/files/Import Export/` —
+with no file picker. On Android 11+, this folder is write-protected for all apps except FD itself
+(scoped storage restriction), so you cannot write there from Syncthing, the Files app, or any
+other app. **Local storage import is effectively unusable on modern Android** unless the device
+is rooted.
+
+**USB (Android)**
+
+Copy `.txt` directly into the `Import Export` folder above via ADB:
+```
+adb push ankiweb-vocab.txt "/sdcard/Android/data/com.orangeorapple.flashcards/files/Import Export/"
+```
+Requires USB debugging enabled. Media files are not supported via this path — use Dropbox/Drive
+for decks with audio or images.
+
+**iOS**
+
+Copy `.txt` via iTunes File Sharing (drag into the FD app in Finder/iTunes).
 
 #### Notes
 - File encoding must be **UTF-8** (or Unicode/UTF-16) for Sinhala script
@@ -250,7 +286,6 @@ Uses DeepL API. Set the key before running:
 export DEEPL_API_KEY=your-key-here   # free keys end with :fx
 ```
 
-Verbs sent as "to X" → infinitive; nouns sent as "the X" → article + noun.
 ~0.2 s per word. Free tier (500k chars/month) is sufficient.
 
 ## Directory structure
@@ -297,6 +332,47 @@ Sinhala-Flashcards/
 | *(images)* | by card ID | Images looked up as `C_enriched/<source>/images/{card_id}.png` |
 | `--source-deck` | *(all)* | Filter to one source deck, e.g. `ankiweb-vocab` |
 | `--translations` | `C_enriched/<source>/translations.csv` | EN→DE join table; auto-detected per source, skipped if missing |
+| `--merge-variants` | off | Collapse cards with the same side-1 text; join Sinhala/romanized with ` / `, spread audio across Sound 2+3 |
+| `--side3` | off | Column for Text 3 (e.g. `romanized`) |
+| `--side4` | off | Column for Text 4 (e.g. `english`) |
+| `--require-audio` | off | Skip cards without a Sinhala audio file |
+| `--split-by-category` | off | Write one `.txt` per Category 1 value instead of a single file |
+
+Every output deck always includes an **`Extra Info`** column containing the stable card ID (e.g. `vocab_09fa560a`). This survives pipeline re-runs and enables statistics preservation (see below).
+
+### Flashcard Deluxe statistics format
+
+FD stores per-card learning progress in a `Statistics 1` column when exporting a deck. Format:
+
+```
+status,flag,review_count,correct_count,streak,rounds_until_shown,current_interval_hours,last_review,due_date[,created_date]
+```
+
+| Field | Values | Description |
+|-------|--------|-------------|
+| status | 0–3 | 0=Pending, 1=New, 2=Active, 3=Exclude |
+| flag | 0/1 | 0=not flagged, 1=flagged |
+| review_count | int | Total times tested |
+| correct_count | int | Total times answered correctly |
+| streak | int | Consecutive correct answers (strong-correct adds 2) |
+| rounds_until_shown | int | Leitner mode: rounds to delay |
+| current_interval_hours | int | Spaced repetition: current interval in hours |
+| last_review | datetime | Last test date, `YYYY-MM-DD HH:MM` |
+| due_date | datetime | Next due date, `YYYY-MM-DD HH:MM` |
+| created_date | datetime | *(undocumented 10th field)* Card import date |
+
+Example: `2,0,4,4,8,8,245,2026-10-22 08:54,2026-11-01 12:54,2026-10-17 23:17`
+
+#### Preserving statistics across rebuilds (future work)
+
+Because every card's `Extra Info` = its deterministic card ID, it is possible to round-trip statistics:
+
+1. **Export** the current deck from FD (sends a `.txt` to the sync folder)
+2. Run `make deck` to rebuild with updated content
+3. Run `scripts/import_stats.py` *(not yet implemented)* — reads the export, matches rows by `Extra Info`, injects `Statistics 1` into the new deck `.txt`
+4. **Import** the patched deck back into FD
+
+This script does not yet exist; see TODO item in *Current state & next steps*.
 
 ## Current state & next steps
 
@@ -314,7 +390,10 @@ Sinhala-Flashcards/
 
 **Next:**
 1. Add everflip cards to the build and run `make enrich-tts-si-<deck>` for Sinhala TTS
-2. Search GitHub / Kaggle for additional Sinhala data
+2. Allow applying `fixes.csv` changes without re-running the entire pipeline (fixes currently only take effect at `make deck` time, but verifying them requires a full rebuild)
+3. Implement `scripts/import_stats.py` to preserve FD learning statistics across deck rebuilds (match by `Extra Info` card ID; see *Flashcard Deluxe statistics format* section above)
+4. Add `make deploy-adb` target to push decks directly to `Android/data/.../files/Import Export/` via ADB (USB or WiFi); on Pixel 8 use `adb tcpip 5555` once over USB then deploy wirelessly
+5. Once `deploy-adb` is working, remove `deploy-syncthing` — Syncthing can't write to the FD import folder so the target is not useful for importing
 
 ### ✓ Done: Pseudo-phonetics (romanized Sinhala)
 

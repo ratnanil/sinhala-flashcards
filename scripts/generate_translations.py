@@ -23,13 +23,8 @@ from pathlib import Path
 
 
 def translate(english: str, api_key: str) -> str:
-    """Translate one English vocabulary entry to German via DeepL.
-
-    Verbs ("to go") are sent as-is → DeepL returns the infinitive ("gehen").
-    All other words get "the " prepended → DeepL returns the noun with its
-    German article ("the mango" → "die Mango", "the pomegranate" → "der Granatapfel").
-    """
-    text = english if english.lower().startswith('to ') else f'the {english}'
+    """Translate one English vocabulary entry to German via DeepL."""
+    text = english
 
     base = 'https://api-free.deepl.com' if api_key.endswith(':fx') else 'https://api.deepl.com'
     payload = json.dumps({
@@ -125,21 +120,19 @@ def main():
         ok = failed = 0
         for card in missing:
             english = card['english']
-            print(f"  {card['id']}  {english!r}", end=' → ', flush=True)
             if english in cache:
                 german = cache[english]
-                print(f'{german}  (cached)')
+                print(f'  {english!r:40s} → {german}  (cached)')
             else:
                 german = translate(english, api_key)
                 if german:
                     cache[english] = german
+                print(f'  {english!r:40s} → {german}' if german else f'  {english!r:40s} → (failed)')
             if german:
-                print(german) if english not in cache else None
                 writer.writerow({'id': card['id'], 'english': english, 'german': german})
                 f.flush()
                 ok += 1
             else:
-                print('(failed, skipped)')
                 failed += 1
 
     print(f'\nDone: {ok} translated, {failed} failed.')
