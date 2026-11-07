@@ -2,3 +2,7 @@ type,key,value,replacement,note
 blacklist,vocab_09fa560a,,,wrong source recording — speaker read the wrong word
 replace_english,vocab_5912ce8b,,I don't remember.,
 replace_english,vocab_a1abd9e5,,I remember,
+replace_german,vocab_aaf50795,,zu sprechen,DeepL mistranslated "to speak" as "um zu sprechen" (purpose clause) instead of infinitive
+replace_german,vocab_e6070ca2,,kommen,DeepL mistranslated "to come" as "in kürze" instead of infinitive
+replace_german,vocab_07faae28,,gehen,DeepL mistranslated "to go" as "zum Mitnehmen" instead of infinitive
+blacklist,vocab_0449d711,,,wrong recording

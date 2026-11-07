@@ -53,9 +53,9 @@ def load_fixes(cards_path: Path) -> tuple:
     Returns (blacklisted_ids, sinhala_replacements, english_replacements).
     """
     fixes_path = Path('A_raw') / cards_path.parent.name / 'fixes.csv'
-    blacklist, sinhala_fixes, english_fixes = set(), {}, {}
+    blacklist, sinhala_fixes, english_fixes, german_fixes = set(), {}, {}, {}
     if not fixes_path.exists():
-        return blacklist, sinhala_fixes, english_fixes
+        return blacklist, sinhala_fixes, english_fixes, german_fixes
     with open(fixes_path, newline='', encoding='utf-8') as f:
         for row in csv.DictReader(f):
             t   = row.get('type', '').strip()
@@ -71,7 +71,9 @@ def load_fixes(cards_path: Path) -> tuple:
                 sinhala_fixes[key] = rep
             elif t == 'replace_english':
                 english_fixes[key] = rep
-    return blacklist, sinhala_fixes, english_fixes
+            elif t == 'replace_german':
+                german_fixes[key] = rep
+    return blacklist, sinhala_fixes, english_fixes, german_fixes
 
 
 def merge_variants(rows: list[dict]) -> list[dict]:
@@ -226,7 +228,7 @@ def main():
     translations = load_translations(translations_path)
     if translations:
         print(f'Loaded {len(translations)} translations from {translations_path}')
-    blacklist, sinhala_fixes, english_fixes = load_fixes(source)
+    blacklist, sinhala_fixes, english_fixes, german_fixes = load_fixes(source)
     out_path   = Path(args.out) if args.out else Path('D_output') / f'{source.parent.name}.txt'
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -255,6 +257,8 @@ def main():
                 row['sinhala'] = sinhala_fixes[card_id]
             if card_id in english_fixes:
                 row['english'] = english_fixes[card_id]
+            if card_id in german_fixes:
+                row['german'] = german_fixes[card_id]
 
             # Fill Sinhala audio from TTS if not already set in source
             if not row.get('audio_file', '').strip():
