@@ -24,7 +24,7 @@ from bs4 import BeautifulSoup
 HTML_DIR   = Path('A_raw/ilovelanguages/html')
 AUDIO_DIR  = Path('A_raw/ilovelanguages/audio')
 OUT_CSV    = Path('B_parsed/ilovelanguages/cards.csv')
-FIELDNAMES = ['id', 'source_deck', 'sinhala', 'english', 'romanized', 'audio_file', 'category']
+FIELDNAMES = ['id', 'source_deck', 'sinhala', 'english', 'romanized', 'audio_file', 'category', 'category_2']
 FIX_FIELDS = ['type', 'key', 'value', 'replacement', 'note']
 
 
@@ -40,6 +40,11 @@ def load_existing_ids(path: Path) -> set:
         return {row['id'] for row in csv.DictReader(f)}
 
 
+def clean_category(text: str) -> str:
+    text = text.replace(' in Sinhala', '').replace('Sinhala ', '').replace('Sinhala', '')
+    return text.strip()
+
+
 def ensure_fixes_stub(fixes_path: Path) -> None:
     if not fixes_path.exists():
         with open(fixes_path, 'w', newline='', encoding='utf-8') as f:
@@ -52,9 +57,12 @@ def parse_lessons() -> list[dict]:
 
     for html_file in sorted(HTML_DIR.glob('Sinhala Lesson*.html')):
         m = re.search(r'Lesson \d+[_:]\s*(.+?)\s*_\s*I Love Languages', html_file.name)
-        category = m.group(1) if m else ''
+        category = clean_category(m.group(1)) if m else ''
         soup = BeautifulSoup(html_file.read_text(encoding='utf-8'), 'html.parser')
         for table in soup.find_all('table', id=lambda x: x and x.startswith('lesson-table-')):
+            box = table.find_parent('div', class_='box')
+            h3 = box.find('h3', class_='box-title') if box else None
+            category_2 = clean_category(h3.get_text(strip=True)) if h3 else ''
             for tr in table.find('tbody').find_all('tr'):
                 tds = tr.find_all('td')
                 if len(tds) < 3:
@@ -89,11 +97,12 @@ def parse_lessons() -> list[dict]:
                     audio_file = ''
 
                 rows.append({
-                    'english':    english,
-                    'sinhala':    sinhala,
-                    'romanized':  romanized,
-                    'audio_file': audio_file,
-                    'category':   category,
+                    'english':     english,
+                    'sinhala':     sinhala,
+                    'romanized':   romanized,
+                    'audio_file':  audio_file,
+                    'category':    category,
+                    'category_2':  category_2,
                 })
 
     return rows
@@ -116,6 +125,7 @@ def main():
             'romanized':   r['romanized'],
             'audio_file':  r['audio_file'],
             'category':    r['category'],
+            'category_2':  r['category_2'],
         })
 
     OUT_CSV.parent.mkdir(parents=True, exist_ok=True)
