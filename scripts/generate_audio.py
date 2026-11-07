@@ -60,9 +60,15 @@ def load_cards(source: Path, text_column: str, source_deck: str | None,
 
 def synthesize_edge(text: str, voice: str, out_file: Path) -> bool:
     """Run edge-tts to synthesize text to out_file. Returns True on success."""
+    # Use SSML with explicit xml:lang to prevent the voice from applying the
+    # wrong phoneme set (e.g. de-DE-KatjaNeural reading German as English).
+    lang = '-'.join(voice.split('-')[:2])  # "de-DE-KatjaNeural" → "de-DE"
+    ssml = (f'<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis"'
+            f' xml:lang="{lang}"><voice name="{voice}">'
+            f'<lang xml:lang="{lang}">{text}</lang></voice></speak>')
     try:
         result = subprocess.run(
-            ['edge-tts', '--voice', voice, '--text', text, '--write-media', str(out_file)],
+            ['edge-tts', '--voice', voice, '--ssml', ssml, '--write-media', str(out_file)],
             capture_output=True,
             timeout=30,
         )

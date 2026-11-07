@@ -88,8 +88,9 @@ After all edits: `make enrich-tts-ankiweb-vocab && make deck-ankiweb-vocab && ma
 **Symptom:** `de-DE-KatjaNeural` mispronounced German-specific phonemes (ä, ö, ü, z as /ts/, etc.).
 Known example: `erzählen` → *erselen*.
 
-**Fix applied:** Switched voice to `de-CH-LeniNeural` in `make enrich-tts`. All stale TTS audio
-deleted — will be regenerated on next pipeline run.
+**Fix applied:** Switched to SSML with explicit `xml:lang="de-DE"` in `generate_audio.py`, forcing
+the correct phoneme set. Voice switched back to `de-DE-KatjaNeural` (Swiss German `de-CH-LeniNeural`
+was also undesirable). All stale TTS audio must be deleted and regenerated.
 
 ---
 

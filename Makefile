@@ -39,7 +39,7 @@ all: deck
 
 # ── A → B ──────────────────────────────────────────────────────────────────
 
-parse: $(patsubst %, parse-%, $(APKG_DECKS)) parse-everflip-sinhala parse-omniglot-phrases parse-ilovelanguages
+parse: $(patsubst %, parse-%, $(APKG_DECKS)) parse-omniglot-phrases parse-ilovelanguages
 
 # Multi-apkg sources — explicit rules
 parse-everflip-sinhala:
@@ -91,13 +91,13 @@ enrich-images-%:
 enrich-tts: $(patsubst %, enrich-tts-%, $(ALL_DECKS))
 
 enrich-tts-%:
-	$(PYTHON) scripts/generate_audio.py --engine edge-tts --voice de-CH-LeniNeural \
+	$(PYTHON) scripts/generate_audio.py --engine edge-tts --voice de-DE-KatjaNeural \
 		--text-column german --lang de \
 		--source B_parsed/$*/cards.csv
 
 # ── C → D ──────────────────────────────────────────────────────────────────
 
-deck: deck-ankiweb-vocab deck-omniglot-phrases deck-ilovelanguages deck-everflip-sinhala
+deck: deck-ankiweb-vocab deck-omniglot-phrases deck-ilovelanguages
 
 deck-ankiweb-vocab: $(DECK_DEPS)
 	$(PYTHON) scripts/build_deck.py \
@@ -125,7 +125,7 @@ deck-everflip-sinhala: $(DECK_DEPS)
 
 # ── Deploy ─────────────────────────────────────────────────────────────────
 
-deploy-dropbox: deploy-dropbox-ankiweb-vocab deploy-dropbox-omniglot-phrases deploy-dropbox-ilovelanguages deploy-dropbox-everflip-sinhala
+deploy-dropbox: deploy-dropbox-ankiweb-vocab deploy-dropbox-omniglot-phrases deploy-dropbox-ilovelanguages
 
 deploy-dropbox-ankiweb-vocab:
 	rclone copyto "D_output/ankiweb-vocab.txt" "$(REMOTE)/ankiweb-vocab.txt" --ignore-times --progress
